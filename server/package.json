@@ -1,0 +1,27 @@
+{
+  "name": "openclaw-mobile-proxy",
+  "version": "1.0.0",
+  "description": "WebSocket 代理服务端 - H5 移动端与 OpenClaw Gateway 之间的桥梁",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "keywords": [
+    "openclaw",
+    "websocket",
+    "proxy"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "uuid": "^10.0.0",
+    "ws": "^8.18.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

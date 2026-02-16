@@ -1,0 +1,15 @@
+{
+  "name": "openclaw-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "H5 移动端聊天客户端 + WebSocket 代理服务端，用于通过手机浏览器与 OpenClaw 智能体聊天",
+  "scripts": {
+    "dev:server": "cd server && node index.js",
+    "dev:h5": "cd h5 && npx vite --host",
+    "build:h5": "cd h5 && npx vite build",
+    "start": "cd server && node index.js",
+    "install:all": "cd server && npm install && cd ../h5 && npm install"
+  },
+  "keywords": ["openclaw", "h5", "mobile", "chat", "websocket"],
+  "license": "MIT"
+}

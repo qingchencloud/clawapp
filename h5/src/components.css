@@ -1,0 +1,250 @@
+.msg-bubble h1, .msg-bubble h2, .msg-bubble h3 {
+  margin: 8px 0 4px;
+  font-weight: 600;
+}
+
+.msg-bubble h1 { font-size: 18px; }
+.msg-bubble h2 { font-size: 16px; }
+.msg-bubble h3 { font-size: 15px; }
+
+.msg-bubble p {
+  margin: 4px 0;
+}
+
+.msg-bubble ul, .msg-bubble ol {
+  padding-left: 20px;
+  margin: 4px 0;
+}
+
+.msg-bubble li {
+  margin: 2px 0;
+}
+
+.msg-bubble a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.msg-bubble a:active {
+  text-decoration: underline;
+}
+
+.msg-bubble strong {
+  font-weight: 600;
+  color: #fff;
+}
+
+.msg-bubble em {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.msg-bubble code {
+  background: var(--bg-code);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'SF Mono', 'Menlo', monospace;
+  font-size: 13px;
+}
+
+.msg-bubble pre {
+  background: var(--bg-code);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin: 8px 0;
+  overflow-x: auto;
+  position: relative;
+}
+
+.msg-bubble pre code {
+  background: none;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  display: block;
+  white-space: pre;
+}
+
+.code-copy-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.code-copy-btn:active {
+  background: rgba(255,255,255,0.2);
+  color: var(--accent);
+}
+
+.hl-keyword { color: #ff7b72; }
+.hl-string { color: #a5d6ff; }
+.hl-comment { color: #8b949e; font-style: italic; }
+.hl-number { color: #79c0ff; }
+.hl-func { color: #d2a8ff; }
+.hl-type { color: #ffa657; }
+
+.cmd-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+
+.cmd-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cmd-panel {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 100%;
+  max-width: 428px;
+  max-height: 65vh;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  z-index: 101;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--safe-bottom);
+}
+
+.cmd-panel.visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+.cmd-panel-header {
+  padding: 16px 20px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.cmd-panel-header h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cmd-panel-header .close-btn {
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cmd-list {
+  overflow-y: auto;
+  padding: 8px 16px 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cmd-group-title {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 12px 0 6px;
+  font-weight: 600;
+}
+
+.cmd-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cmd-item:active {
+  background: rgba(233, 69, 96, 0.12);
+}
+
+.cmd-item .cmd-text {
+  font-size: 14px;
+  font-family: 'SF Mono', 'Menlo', monospace;
+  color: var(--accent);
+}
+
+.cmd-item .cmd-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.lightbox.visible {
+  display: flex;
+}
+
+.lightbox img {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+}
+
+.lightbox .close-lightbox {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.msg-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  margin: 12px 0 6px;
+}
+
+.system-msg {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 6px 0;
+}

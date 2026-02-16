@@ -1,0 +1,49 @@
+# OpenClaw Mobile 测试环境
+# 使用隔离的 OpenClaw 实例，不影响本地正在运行的 OpenClaw
+# 端口映射：28789（避免与本地 18789 冲突）
+
+services:
+  # 隔离的 OpenClaw Gateway（测试用）
+  openclaw-test:
+    image: alpine/openclaw:latest
+    container_name: openclaw-mobile-test
+    environment:
+      HOME: /home/node
+      TERM: xterm-256color
+      OPENCLAW_GATEWAY_TOKEN: test-token-openclaw-mobile-2026
+    volumes:
+      - openclaw-test-data:/home/node/.openclaw
+    ports:
+      - "28789:18789"
+    init: true
+    restart: unless-stopped
+    command:
+      [
+        "node",
+        "dist/index.js",
+        "gateway",
+        "--bind",
+        "lan",
+        "--port",
+        "18789",
+      ]
+
+  # WebSocket 代理服务端
+  proxy:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: openclaw-mobile-proxy
+    environment:
+      PROXY_PORT: "3210"
+      PROXY_TOKEN: "mobile-test-token-2026"
+      OPENCLAW_GATEWAY_URL: "ws://openclaw-test:18789"
+      OPENCLAW_GATEWAY_TOKEN: "test-token-openclaw-mobile-2026"
+    ports:
+      - "3210:3210"
+    depends_on:
+      - openclaw-test
+    restart: unless-stopped
+
+volumes:
+  openclaw-test-data:
