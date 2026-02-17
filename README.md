@@ -5,13 +5,13 @@
 </p>
 
 <p align="center">
-  <a href="#功能特性">功能特性</a> •
-  <a href="#截图预览">截图预览</a> •
-  <a href="#快速开始">快速开始</a> •
-  <a href="#部署方式">部署方式</a> •
-  <a href="#外网访问">外网访问</a> •
-  <a href="#配置参数">配置参数</a> •
-  <a href="#常见问题">常见问题</a> •
+  <a href="#features">功能特性</a> •
+  <a href="#screenshots">截图预览</a> •
+  <a href="#quickstart">快速开始</a> •
+  <a href="#deploy">部署方式</a> •
+  <a href="#remote">外网访问</a> •
+  <a href="#config">配置参数</a> •
+  <a href="#faq">常见问题</a> •
   <a href="#english">English</a>
 </p>
 
@@ -22,7 +22,7 @@
 
 ---
 
-## 这是什么？
+<h2 id="about">这是什么？</h2>
 
 [OpenClaw](https://github.com/openclaw/openclaw) 是一个强大的 AI 智能体平台（[中文汉化版](https://github.com/1186258278/OpenClawChineseTranslation)），但它的 Gateway 默认只监听本机（`127.0.0.1:18789`），手机无法直接连接。
 
@@ -40,7 +40,7 @@ OpenClaw Gateway（端口 18789）
 
 ---
 
-## 功能特性
+<h2 id="features">功能特性</h2>
 
 - 💬 实时流式聊天（打字机效果）
 - 📷 图片发送
@@ -58,7 +58,7 @@ OpenClaw Gateway（端口 18789）
 
 ---
 
-## 截图预览
+<h2 id="screenshots">截图预览</h2>
 
 <table align="center">
   <tr>
@@ -75,7 +75,7 @@ OpenClaw Gateway（端口 18789）
 
 ---
 
-## 快速开始
+<h2 id="quickstart">快速开始</h2>
 
 ### 前提条件
 
@@ -130,7 +130,7 @@ npm start
 
 ---
 
-## 部署方式
+<h2 id="deploy">部署方式</h2>
 
 ### 本地部署（同一网络）
 
@@ -179,7 +179,7 @@ pm2 save && pm2 startup
 
 ---
 
-## 外网访问
+<h2 id="remote">外网访问</h2>
 
 不在同一网络时，有以下方案：
 
@@ -249,7 +249,7 @@ server {
 
 ---
 
-## 连接说明
+<h2 id="connection">连接说明</h2>
 
 打开 H5 页面后会看到连接设置页：
 
@@ -270,7 +270,7 @@ server {
 
 ---
 
-## 配置参数
+<h2 id="config">配置参数</h2>
 
 | 变量 | 必填 | 默认值 | 说明 |
 |------|------|--------|------|
@@ -282,7 +282,7 @@ server {
 
 ---
 
-## 项目结构
+<h2 id="structure">项目结构</h2>
 
 ```
 clawapp/
@@ -321,7 +321,7 @@ clawapp/
 
 ---
 
-## 开发
+<h2 id="dev">开发</h2>
 
 ```bash
 # 安装依赖
@@ -336,7 +336,7 @@ npm run dev:server
 
 ---
 
-## 常见问题
+<h2 id="faq">常见问题</h2>
 
 **Q: 一直显示「连接中」？**
 
@@ -364,7 +364,7 @@ npm run dev:server
 
 ---
 
-## 安全建议
+<h2 id="security">安全建议</h2>
 
 - 务必设置强 `PROXY_TOKEN`（建议 32 位以上随机字符串）
   ```bash
@@ -376,7 +376,7 @@ npm run dev:server
 
 ---
 
-## 相关项目
+<h2 id="related">相关项目</h2>
 
 - [OpenClaw](https://github.com/openclaw/openclaw) - AI 智能体平台
 - [OpenClaw 中文汉化版](https://github.com/1186258278/OpenClawChineseTranslation) - 社区汉化
