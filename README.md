@@ -1,4 +1,4 @@
-# OpenClaw Mobile
+# ClawApp
 
 <p align="center">
   <strong>📱 用手机浏览器和你的 OpenClaw AI 智能体聊天</strong>
@@ -6,16 +6,17 @@
 
 <p align="center">
   <a href="#功能特性">功能特性</a> •
+  <a href="#截图预览">截图预览</a> •
   <a href="#快速开始">快速开始</a> •
   <a href="#部署方式">部署方式</a> •
   <a href="#外网访问">外网访问</a> •
-  <a href="#连接说明">连接说明</a> •
   <a href="#配置参数">配置参数</a> •
   <a href="#常见问题">常见问题</a> •
   <a href="#english">English</a>
 </p>
 
 <p align="center">
+  <a href="https://clawapp.qt.cool">🌐 产品主页</a> •
   <a href="https://github.com/1186258278/OpenClawChineseTranslation">🇨🇳 OpenClaw 中文汉化版</a>
 </p>
 
@@ -25,12 +26,12 @@
 
 [OpenClaw](https://github.com/openclaw/openclaw) 是一个强大的 AI 智能体平台（[中文汉化版](https://github.com/1186258278/OpenClawChineseTranslation)），但它的 Gateway 默认只监听本机（`127.0.0.1:18789`），手机无法直接连接。
 
-本项目解决了这个问题：
+ClawApp 解决了这个问题：
 
 ```
 手机浏览器（任意网络）
     ↓ WebSocket (WS / WSS)
-代理服务端（本项目，端口 3210）
+代理服务端（ClawApp Server，端口 3210）
     ↓ WebSocket (localhost)
 OpenClaw Gateway（端口 18789）
 ```
@@ -55,6 +56,20 @@ OpenClaw Gateway（端口 18789）
 
 ---
 
+## 截图预览
+
+<p align="center">
+  <img src="docs/image/chat-response.png" width="240" alt="AI 聊天回复" />
+  <img src="docs/image/chat-commands.jpg" width="240" alt="快捷指令面板" />
+  <img src="docs/image/session-manager.jpg" width="240" alt="会话管理" />
+</p>
+<p align="center">
+  <img src="docs/image/commands-panel.png" width="240" alt="指令面板特写" />
+  <img src="docs/image/settings-panel.jpg" width="240" alt="设置与帮助" />
+</p>
+
+---
+
 ## 快速开始
 
 ### 前提条件
@@ -66,8 +81,8 @@ OpenClaw Gateway（端口 18789）
 ### 方式一：Docker 部署（推荐）
 
 ```bash
-git clone https://github.com/qingchencloud/openclaw-mobile.git
-cd openclaw-mobile
+git clone https://github.com/qingchencloud/clawapp.git
+cd clawapp
 ```
 
 在项目根目录创建 `.env` 文件：
@@ -89,8 +104,8 @@ docker compose up -d --build
 ### 方式二：直接运行
 
 ```bash
-git clone https://github.com/qingchencloud/openclaw-mobile.git
-cd openclaw-mobile
+git clone https://github.com/qingchencloud/clawapp.git
+cd clawapp
 npm run install:all
 npm run build:h5
 cp server/.env.example server/.env
@@ -117,8 +132,8 @@ npm start
 适合家庭/办公室使用，手机和电脑在同一 WiFi 下。
 
 ```bash
-git clone https://github.com/qingchencloud/openclaw-mobile.git
-cd openclaw-mobile && npm run install:all
+git clone https://github.com/qingchencloud/clawapp.git
+cd clawapp && npm run install:all
 npm run build:h5
 cp server/.env.example server/.env
 # 编辑 server/.env 填入 token
@@ -151,7 +166,7 @@ Docker 环境下会自动使用 `host.docker.internal` 连接宿主机的 Gatewa
 npm install -g pm2
 
 # 启动
-pm2 start server/index.js --name openclaw-mobile
+pm2 start server/index.js --name clawapp
 
 # 开机自启
 pm2 save && pm2 startup
@@ -202,7 +217,7 @@ cloudflared tunnel --url http://localhost:3210
 ```nginx
 server {
     listen 443 ssl;
-    server_name openclaw.你的域名.com;
+    server_name clawapp.你的域名.com;
 
     ssl_certificate /path/to/cert.pem;
     ssl_certificate_key /path/to/key.pem;
@@ -265,7 +280,7 @@ server {
 ## 项目结构
 
 ```
-openclaw-mobile/
+clawapp/
 ├── server/                # WebSocket 代理服务端
 │   ├── index.js           # Express + WS 代理 + Gateway 握手
 │   ├── package.json
@@ -286,9 +301,11 @@ openclaw-mobile/
 │   │   └── components.css # 组件样式
 │   ├── index.html
 │   └── vite.config.js
+├── docs/                  # 文档 + GitHub Pages
+│   ├── index.html         # 产品落地页
+│   └── image/             # 截图
 ├── Dockerfile             # 多阶段构建
 ├── docker-compose.yml     # 生产部署
-├── docker-compose.test.yml # 测试环境
 └── README.md
 ```
 
@@ -361,14 +378,14 @@ npm run dev:server
 
 ### What is this?
 
-OpenClaw Mobile is an H5 mobile chat client that lets you chat with your [OpenClaw](https://github.com/openclaw/openclaw) AI agent from any phone browser.
+ClawApp is an H5 mobile chat client that lets you chat with your [OpenClaw](https://github.com/openclaw/openclaw) AI agent from any phone browser.
 
 ### Quick Start
 
 **Docker:**
 ```bash
-git clone https://github.com/qingchencloud/openclaw-mobile.git
-cd openclaw-mobile
+git clone https://github.com/qingchencloud/clawapp.git
+cd clawapp
 echo 'PROXY_TOKEN=your-token' > .env
 echo 'OPENCLAW_GATEWAY_TOKEN=your-gw-token' >> .env
 docker compose up -d --build
@@ -376,8 +393,8 @@ docker compose up -d --build
 
 **Direct:**
 ```bash
-git clone https://github.com/qingchencloud/openclaw-mobile.git
-cd openclaw-mobile && npm run install:all && npm run build:h5
+git clone https://github.com/qingchencloud/clawapp.git
+cd clawapp && npm run install:all && npm run build:h5
 cp server/.env.example server/.env  # edit tokens
 npm start
 ```
@@ -397,6 +414,11 @@ Real-time streaming chat, image attachments, Markdown rendering, session managem
 </details>
 
 ---
+
+<p align="center">
+  由 <a href="https://qt.cool">晴辰云</a> 开发维护<br/>
+  <a href="https://clawapp.qt.cool">clawapp.qt.cool</a>
+</p>
 
 ## License
 

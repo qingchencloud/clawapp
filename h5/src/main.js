@@ -4,8 +4,8 @@ import { createChatPage, initChatUI, setSessionKey, loadHistory } from './chat-u
 import { initI18n, t, onLangChange } from './i18n.js'
 import { initTheme } from './theme.js'
 
-const STORAGE_KEY = 'openclaw-config'
-const GUIDE_KEY = 'openclaw-guide-shown'
+const STORAGE_KEY = 'clawapp-config'
+const GUIDE_KEY = 'clawapp-guide-shown'
 
 // 初始化 i18n 和主题
 initI18n()
@@ -53,6 +53,9 @@ function createSetupPage() {
       </div>
       <button class="btn-primary" id="connect-btn">${t('setup.connect')}</button>
       <div class="setup-error" id="setup-error"></div>
+    </div>
+    <div class="setup-footer">
+      <a href="https://clawapp.qt.cool" target="_blank" rel="noopener">Powered by 晴辰云 · clawapp.qt.cool</a>
     </div>
   `
   return page

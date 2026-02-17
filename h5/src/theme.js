@@ -2,7 +2,7 @@
  * 主题管理 - 亮色/暗色/跟随系统
  */
 
-const THEME_KEY = 'openclaw-theme'
+const THEME_KEY = 'clawapp-theme'
 
 let _currentTheme = 'auto' // 'light' | 'dark' | 'auto'
 let _onThemeChange = []

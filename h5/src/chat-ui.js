@@ -5,7 +5,7 @@ import { initCommands, showCommands } from './commands.js'
 import { t, formatRelativeTime } from './i18n.js'
 import { initSettings, showSettings } from './settings.js'
 
-const STORAGE_SESSION_KEY = 'openclaw-session-key'
+const STORAGE_SESSION_KEY = 'clawapp-session-key'
 
 let _messagesEl = null
 let _typingEl = null
@@ -57,7 +57,7 @@ export function createChatPage() {
   page.innerHTML = `
     <div class="chat-header">
       <div class="status-dot" id="status-dot"></div>
-      <div class="title" id="session-title">OpenClaw Mobile</div>
+      <div class="title" id="session-title">ClawApp</div>
       <button class="settings-btn" id="settings-btn">${SVG_SETTINGS}</button>
     </div>
     <div class="chat-messages" id="chat-messages">
@@ -500,7 +500,7 @@ function updateSessionTitle() {
   // 从 sessionKey 提取可读名称
   // 格式: agent:main:main 或 agent:main:qqbot:dm:xxx
   const parts = _sessionKey.split(':')
-  let label = 'OpenClaw Mobile'
+  let label = 'ClawApp'
   if (parts.length >= 3) {
     const agent = parts[1]
     const channel = parts.slice(2).join(':')

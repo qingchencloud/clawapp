@@ -1,5 +1,5 @@
 /**
- * WebSocket 客户端 - 对接 OpenClaw Mobile 代理服务端
+ * WebSocket 客户端 - 对接 ClawApp 代理服务端
  * 
  * 协议流程：
  * 1. 连接到代理服务端 ws://host/ws?token=xxx

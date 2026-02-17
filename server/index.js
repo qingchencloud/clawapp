@@ -1,5 +1,5 @@
 /**
- * OpenClaw Mobile WebSocket 代理服务端
+ * ClawApp WebSocket 代理服务端
  * 
  * 功能：
  * - 接收来自 H5 客户端的 WebSocket 连接
@@ -427,7 +427,7 @@ process.on('SIGTERM', shutdown);
 
 // 启动服务
 server.listen(CONFIG.port, '0.0.0.0', () => {
-  log.info(`OpenClaw Mobile 代理服务已启动`);
+  log.info(`ClawApp 代理服务已启动`);
   log.info(`- 监听地址: 0.0.0.0:${CONFIG.port}`);
   log.info(`- WebSocket 路径: /ws?token=xxx`);
   log.info(`- Gateway 地址: ${CONFIG.gatewayUrl}`);

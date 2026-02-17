@@ -216,6 +216,22 @@ html, body {
   min-height: 20px;
 }
 
+.setup-footer {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.setup-footer a {
+  color: var(--text-muted);
+  font-size: 12px;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.setup-footer a:hover {
+  color: var(--accent);
+}
+
 .chat-page {
   background: var(--bg-primary);
 }

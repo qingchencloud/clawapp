@@ -2,12 +2,12 @@
  * 国际化模块 - 中英文切换
  */
 
-const LANG_KEY = 'openclaw-lang'
+const LANG_KEY = 'clawapp-lang'
 
 const messages = {
   'zh-CN': {
     // 连接页
-    'app.title': 'OpenClaw Mobile',
+    'app.title': 'ClawApp',
     'app.subtitle': '连接到你的 OpenClaw 智能体',
     'setup.host': '服务器地址',
     'setup.host.placeholder': '例如: 192.168.1.100:3210',
@@ -92,7 +92,7 @@ const messages = {
     'settings.lang': '语言',
     'settings.disconnect': '断开连接',
     // 引导
-    'guide.welcome': '欢迎使用 OpenClaw Mobile 👋',
+    'guide.welcome': '欢迎使用 ClawApp 👋',
     'guide.tip1': '💬 在底部输入框发送消息与 AI 聊天',
     'guide.tip2': '📋 点击顶部标题可切换/管理会话',
     'guide.tip3': '⚡ 左下角闪电按钮打开快捷指令',
@@ -110,7 +110,7 @@ const messages = {
     'copy.fail': '失败',
   },
   'en': {
-    'app.title': 'OpenClaw Mobile',
+    'app.title': 'ClawApp',
     'app.subtitle': 'Connect to your OpenClaw agent',
     'setup.host': 'Server Address',
     'setup.host.placeholder': 'e.g. 192.168.1.100:3210',
@@ -188,7 +188,7 @@ const messages = {
     'settings.theme.auto': 'System',
     'settings.lang': 'Language',
     'settings.disconnect': 'Disconnect',
-    'guide.welcome': 'Welcome to OpenClaw Mobile 👋',
+    'guide.welcome': 'Welcome to ClawApp 👋',
     'guide.tip1': '💬 Type in the input box below to chat with AI',
     'guide.tip2': '📋 Tap the title bar to switch/manage sessions',
     'guide.tip3': '⚡ Tap the bolt icon for quick commands',

@@ -1,8 +1,13 @@
 {
-  "name": "openclaw-mobile",
+  "name": "clawapp",
   "version": "1.0.0",
   "private": true,
-  "description": "H5 移动端聊天客户端 + WebSocket 代理服务端，用于通过手机浏览器与 OpenClaw 智能体聊天",
+  "description": "ClawApp - OpenClaw AI 智能体的 H5 移动端聊天客户端",
+  "homepage": "https://clawapp.qt.cool",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/qingchencloud/clawapp.git"
+  },
   "scripts": {
     "dev:server": "cd server && node index.js",
     "dev:h5": "cd h5 && npx vite --host",
@@ -10,6 +15,7 @@
     "start": "cd server && node index.js",
     "install:all": "cd server && npm install && cd ../h5 && npm install"
   },
-  "keywords": ["openclaw", "h5", "mobile", "chat", "websocket"],
+  "keywords": ["openclaw", "clawapp", "h5", "mobile", "chat", "websocket", "ai-agent"],
+  "author": "武汉晴辰天下网络科技有限公司 <contact@qingchencloud.com>",
   "license": "MIT"
 }

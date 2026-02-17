@@ -1,4 +1,4 @@
-# OpenClaw Mobile 生产部署
+# ClawApp 生产部署
 # 用法: docker compose up -d --build
 
 services:
@@ -10,7 +10,7 @@ services:
       - "3210:3210"
     environment:
       PROXY_PORT: "3210"
-      PROXY_TOKEN: "${PROXY_TOKEN:-mobile-test-2026}"
+      PROXY_TOKEN: "${PROXY_TOKEN:-changeme}"
       OPENCLAW_GATEWAY_URL: "ws://host.docker.internal:18789"
       OPENCLAW_GATEWAY_TOKEN: "${OPENCLAW_GATEWAY_TOKEN}"
       ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-}"

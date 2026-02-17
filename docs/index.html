@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ClawApp - OpenClaw AI 智能体移动端客户端</title>
+<meta name="description" content="ClawApp 是 OpenClaw AI 智能体平台的移动端 H5 客户端，支持流式聊天、图片发送、快捷指令、会话管理、主题切换等功能。打开手机浏览器即可使用。">
+<meta name="keywords" content="ClawApp,OpenClaw,AI,智能体,移动端,H5,聊天,WebSocket,晴辰云">
+<link rel="canonical" href="https://clawapp.qt.cool">
+<meta property="og:title" content="ClawApp - OpenClaw AI 智能体移动端客户端">
+<meta property="og:description" content="用手机浏览器和你的 OpenClaw AI 智能体聊天。流式对话、图片发送、快捷指令、会话管理，打开即用。">
+<meta property="og:url" content="https://clawapp.qt.cool">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://clawapp.qt.cool/image/chat-response.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ClawApp - OpenClaw AI 移动端">
+<meta name="twitter:description" content="用手机浏览器和你的 OpenClaw AI 智能体聊天">
+<meta name="twitter:image" content="https://clawapp.qt.cool/image/chat-response.png">
+<meta name="theme-color" content="#1a1a2e">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"ClawApp","description":"OpenClaw AI 智能体平台的移动端 H5 客户端","url":"https://clawapp.qt.cool","applicationCategory":"CommunicationApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"},"author":{"@type":"Organization","name":"武汉晴辰天下网络科技有限公司","url":"https://qingchencloud.com"}}</script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#1a1a2e;--bg2:#16213e;--card:#2a2a3e;--accent:#e94560;--accent2:#0f3460;--text:#e8e8f0;--text2:#9898b0;--text3:#6a6a80;--border:#333355;--radius:14px}
+html{scroll-behavior:smooth}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+a:hover{opacity:.85}
+
+.aurora{position:fixed;inset:0;z-index:-1;overflow:hidden}
+.aurora::before,.aurora::after{content:'';position:absolute;border-radius:50%;filter:blur(120px);opacity:.15;animation:drift 20s ease-in-out infinite alternate}
+.aurora::before{width:600px;height:600px;background:var(--accent);top:-200px;left:-100px}
+.aurora::after{width:500px;height:500px;background:var(--accent2);bottom:-200px;right:-100px;animation-delay:-10s}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(60px,40px) scale(1.1)}100%{transform:translate(-30px,80px) scale(.95)}}
+
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+section{padding:80px 0}
+
+.hero{min-height:90vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:60px 24px}
+.hero-inner{max-width:640px}
+.hero svg{width:80px;height:80px;margin-bottom:20px;filter:drop-shadow(0 0 30px rgba(233,69,96,.3))}
+.hero h1{font-size:clamp(2.5rem,6vw,3.5rem);font-weight:800;letter-spacing:-1px;background:linear-gradient(135deg,var(--accent),#ff8fa3);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{font-size:1.15rem;color:var(--text2);margin:16px 0 32px;max-width:480px;margin-left:auto;margin-right:auto}
+.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;border-radius:var(--radius);font-size:15px;font-weight:600;transition:transform .15s,box-shadow .2s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 4px 20px rgba(233,69,96,.3)}
+.btn-primary:hover{box-shadow:0 6px 30px rgba(233,69,96,.45);opacity:1}
+.btn-outline{border:1.5px solid var(--border);color:var(--text);background:rgba(42,42,62,.6);backdrop-filter:blur(10px)}
+.btn-outline:hover{border-color:var(--accent);opacity:1}
+
+.section-title{text-align:center;margin-bottom:48px}
+.section-title h2{font-size:clamp(1.6rem,4vw,2.2rem);font-weight:700}
+.section-title p{color:var(--text2);margin-top:8px;font-size:1rem}
+
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.feature-card{background:rgba(42,42,62,.5);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;backdrop-filter:blur(8px);transition:transform .2s,border-color .2s}
+.feature-card:hover{transform:translateY(-4px);border-color:var(--accent)}
+.feature-card .icon{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.feature-card .icon svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.feature-card h3{font-size:1.05rem;margin-bottom:6px}
+.feature-card p{color:var(--text2);font-size:.9rem}
+
+.screenshots{overflow-x:auto;-webkit-overflow-scrolling:touch;display:flex;gap:16px;padding:0 24px 16px;scroll-snap-type:x mandatory}
+.screenshots img{height:420px;border-radius:var(--radius);border:1px solid var(--border);scroll-snap-align:center;flex-shrink:0;object-fit:cover}
+@media(max-width:640px){.screenshots img{height:320px}}
+
+.arch{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;padding:40px 0}
+.arch-node{background:rgba(42,42,62,.6);border:1px solid var(--border);border-radius:var(--radius);padding:20px 28px;text-align:center;backdrop-filter:blur(8px);min-width:160px}
+.arch-node strong{display:block;font-size:1rem;margin-bottom:4px}
+.arch-node span{color:var(--text3);font-size:.85rem}
+.arch-arrow{color:var(--accent);font-size:1.5rem;padding:0 12px;flex-shrink:0}
+@media(max-width:640px){.arch{flex-direction:column}.arch-arrow{transform:rotate(90deg);padding:8px 0}}
+
+.code-tabs{display:flex;gap:0;margin-bottom:0;border-bottom:1px solid var(--border)}
+.code-tab{padding:10px 20px;background:transparent;border:none;color:var(--text2);font-size:.9rem;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit}
+.code-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.code-block{background:var(--bg2);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);padding:20px 24px;overflow-x:auto;font-family:'SF Mono',Menlo,monospace;font-size:.85rem;line-height:1.7;color:var(--text2);display:none;white-space:pre}
+.code-block.active{display:block}
+.code-wrapper{max-width:640px;margin:0 auto;border-radius:var(--radius);overflow:hidden}
+.code-wrapper .code-tabs{border-radius:var(--radius) var(--radius) 0 0;background:rgba(22,33,62,.8)}
+
+footer{border-top:1px solid var(--border);padding:40px 24px;text-align:center;color:var(--text3);font-size:.85rem}
+footer a{color:var(--text2)}
+footer .links{display:flex;gap:20px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}
+footer .icp{margin-top:8px;font-size:.8rem}
+</style>
+</head>
+<body>
+<div class="aurora"></div>
+
+<section class="hero">
+<div class="hero-inner">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+<defs><linearGradient id="g" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#e94560"/><stop offset="100%" stop-color="#0f3460"/></linearGradient></defs>
+<rect width="64" height="64" rx="14" fill="#1a1a2e"/>
+<path d="M32 12C20.954 12 12 20.954 12 32s8.954 20 20 20c2.5 0 4.9-.46 7.1-1.3L48 54l-1.3-8.9A19.9 19.9 0 0052 32c0-11.046-8.954-20-20-20z" stroke="url(#g)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="24" cy="32" r="3" fill="#e94560"/><circle cx="32" cy="32" r="3" fill="#e94560"/><circle cx="40" cy="32" r="3" fill="#e94560"/>
+</svg>
+<h1>ClawApp</h1>
+<p>用手机浏览器和你的 OpenClaw AI 智能体聊天<br>流式对话 · 图片发送 · 快捷指令 · 会话管理</p>
+<div class="hero-btns">
+<a href="https://github.com/qingchencloud/clawapp" class="btn btn-primary">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+GitHub
+</a>
+<a href="#quickstart" class="btn btn-outline">快速开始</a>
+</div>
+</div>
+</section>
+
+<section>
+<div class="container">
+<div class="section-title">
+<h2>功能特性</h2>
+<p>为移动端精心打造的 AI 聊天体验</p>
+</div>
+<div class="features">
+<div class="feature-card">
+<div class="icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+<h3>流式聊天</h3>
+<p>实时打字机效果，Markdown 渲染 + 代码高亮，工具调用状态实时显示</p>
+</div>
+<div class="feature-card">
+<div class="icon"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+<h3>图片发送</h3>
+<p>支持拍照和相册选取，图片预览、压缩上传，AI 可识别图片内容</p>
+</div>
+<div class="feature-card">
+<div class="icon"><svg viewBox="0 0 24 24"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg></div>
+<h3>快捷指令</h3>
+<p>/model 切换模型、/think 控制思考、/new 新建会话，一键触达</p>
+</div>
+<div class="feature-card">
+<div class="icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+<h3>会话管理</h3>
+<p>多会话切换、新建、删除，每个会话独立上下文，互不干扰</p>
+</div>
+<div class="feature-card">
+<div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></div>
+<h3>主题切换</h3>
+<p>浅色 / 深色 / 跟随系统，中英文双语切换，适配各种使用场景</p>
+</div>
+<div class="feature-card">
+<div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+<h3>安全认证</h3>
+<p>Token 双重认证，Gateway Token 不暴露给客户端，支持 HTTPS/WSS</p>
+</div>
+</div>
+</div>
+</section>
+
+<section>
+<div class="container">
+<div class="section-title">
+<h2>界面预览</h2>
+<p>在 iPhone / Android 浏览器中的真实效果</p>
+</div>
+</div>
+<div class="screenshots">
+<img src="image/chat-response.png" alt="ClawApp AI 聊天回复界面" loading="lazy" width="240" height="420">
+<img src="image/chat-commands.jpg" alt="ClawApp 快捷指令面板" loading="lazy" width="240" height="420">
+<img src="image/session-manager.jpg" alt="ClawApp 会话管理" loading="lazy" width="240" height="420">
+<img src="image/commands-panel.png" alt="ClawApp 指令面板" loading="lazy" width="240" height="420">
+<img src="image/settings-panel.jpg" alt="ClawApp 设置面板" loading="lazy" width="240" height="420">
+</div>
+</section>
+
+<section>
+<div class="container">
+<div class="section-title">
+<h2>工作原理</h2>
+<p>WebSocket 代理桥接，自动完成 Gateway 握手</p>
+</div>
+<div class="arch">
+<div class="arch-node"><strong>手机浏览器</strong><span>任意网络</span></div>
+<div class="arch-arrow">&#8594;</div>
+<div class="arch-node"><strong>ClawApp Server</strong><span>:3210 WS 代理</span></div>
+<div class="arch-arrow">&#8594;</div>
+<div class="arch-node"><strong>OpenClaw Gateway</strong><span>:18789 本机</span></div>
+</div>
+</div>
+</section>
+
+<section id="quickstart">
+<div class="container">
+<div class="section-title">
+<h2>快速开始</h2>
+<p>两种部署方式，3 分钟上手</p>
+</div>
+<div class="code-wrapper">
+<div class="code-tabs">
+<button class="code-tab active" onclick="switchTab(0)">Docker (推荐)</button>
+<button class="code-tab" onclick="switchTab(1)">直接运行</button>
+</div>
+<div class="code-block active">git clone https://github.com/qingchencloud/clawapp.git
+cd clawapp
+
+# 创建 .env
+echo 'PROXY_TOKEN=my-secret-token' > .env
+echo 'OPENCLAW_GATEWAY_TOKEN=你的token' >> .env
+
+# 启动
+docker compose up -d --build
+
+# 手机访问 http://你的电脑IP:3210</div>
+<div class="code-block">git clone https://github.com/qingchencloud/clawapp.git
+cd clawapp
+npm run install:all
+npm run build:h5
+cp server/.env.example server/.env
+# 编辑 server/.env 填入 token
+npm start
+
+# 手机访问 http://你的电脑IP:3210</div>
+</div>
+</div>
+</section>
+
+<footer>
+<div class="links">
+<a href="https://github.com/qingchencloud/clawapp">GitHub</a>
+<a href="https://qingchencloud.com">官网</a>
+<a href="https://qt.cool">qt.cool</a>
+</div>
+<div>由 <a href="https://qingchencloud.com">武汉晴辰天下网络科技有限公司</a> 开发维护 · MIT License</div>
+<div class="icp"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">鄂ICP备2025164966号</a></div>
+</footer>
+
+<script>
+function switchTab(i){
+document.querySelectorAll('.code-tab').forEach((t,j)=>t.classList.toggle('active',j===i));
+document.querySelectorAll('.code-block').forEach((b,j)=>b.classList.toggle('active',j===i));
+}
+</script>
+</body>
+</html>
