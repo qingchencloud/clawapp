@@ -15,6 +15,9 @@ let _currentAiText = ''
 let _currentRunId = null
 let _toolCards = new Map()
 let _onSettingsCallback = null
+let _useChatDelta = false  // 标记是否收到过 chat delta，避免两个事件源重复渲染
+let _renderTimer = null    // 节流渲染定时器
+const RENDER_THROTTLE = 50 // 渲染节流间隔 ms
 
 const SVG_SEND = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>`
 const SVG_ATTACH = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>`
@@ -169,12 +172,12 @@ function handleChatEvent(payload) {
   if (state === 'delta') {
     // chat delta 的 message 是累积文本（完整消息对象）
     const text = extractText(payload.message)
-    if (text && (!_currentAiText || text.length >= _currentAiText.length)) {
+    if (text && text.length > _currentAiText.length) {
+      _useChatDelta = true  // 标记：优先用 chat delta
       showTyping(false)
       if (!_currentAiBubble) { _currentAiBubble = createAiBubble(); _currentRunId = payload.runId }
       _currentAiText = text
-      _currentAiBubble.innerHTML = renderMarkdown(_currentAiText)
-      scrollToBottom()
+      throttledRender()
     }
     return
   }
@@ -225,13 +228,14 @@ function handleAgentEvent(payload) {
   }
 
   // agent assistant 事件的 data.text 是增量文本
+  // 如果已经在用 chat delta（累积），就跳过 agent assistant（增量），避免重复
   if (stream === 'assistant') {
+    if (_useChatDelta) return
     showTyping(false)
     if (data?.text) {
       if (!_currentAiBubble) { _currentAiBubble = createAiBubble(); _currentRunId = runId }
       _currentAiText += data.text
-      _currentAiBubble.innerHTML = renderMarkdown(_currentAiText)
-      scrollToBottom()
+      throttledRender()
     }
     return
   }
@@ -259,12 +263,32 @@ function handleAgentEvent(payload) {
 }
 
 function resetStreamState() {
+  // 最后一次渲染确保完整
+  if (_currentAiBubble && _currentAiText) {
+    _currentAiBubble.innerHTML = renderMarkdown(_currentAiText)
+    bindImageClicks(_currentAiBubble)
+    scrollToBottom()
+  }
+  if (_renderTimer) { clearTimeout(_renderTimer); _renderTimer = null }
   _currentAiBubble = null
   _currentAiText = ''
   _currentRunId = null
   _isStreaming = false
+  _useChatDelta = false
   _toolCards.clear()
   updateSendState()
+}
+
+/** 节流渲染：避免高频 delta 导致疯狂重绘 */
+function throttledRender() {
+  if (_renderTimer) return  // 已有待执行的渲染，跳过
+  _renderTimer = setTimeout(() => {
+    _renderTimer = null
+    if (_currentAiBubble && _currentAiText) {
+      _currentAiBubble.innerHTML = renderMarkdown(_currentAiText)
+      scrollToBottom()
+    }
+  }, RENDER_THROTTLE)
 }
 
 function createAiBubble() {
