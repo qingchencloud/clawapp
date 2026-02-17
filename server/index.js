@@ -127,7 +127,7 @@ function createConnectFrame() {
         mode: 'backend',
       },
       role: 'operator',
-      scopes: ['operator.admin', 'operator.approvals', 'operator.pairing'],
+      scopes: ['operator.admin', 'operator.approvals', 'operator.pairing', 'operator.read', 'operator.write'],
       caps: [],
       auth: { token: CONFIG.gatewayToken },
       locale: 'zh-CN',
