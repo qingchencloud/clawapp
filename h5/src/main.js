@@ -5,6 +5,8 @@ import { initI18n, t, onLangChange } from './i18n.js'
 import { initTheme } from './theme.js'
 
 const STORAGE_KEY = 'openclaw-config'
+const GUIDE_KEY = 'openclaw-guide-shown'
+const AUTO_RETRY_MAX = 3
 
 // 初始化 i18n 和主题
 initI18n()
@@ -32,8 +34,10 @@ function createSetupPage() {
     <div class="setup-card">
       <div class="setup-logo">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-          <defs><linearGradient id="sg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#e94560"/><stop offset="100%" stop-color="#0f3460"/></linearGradient></defs>
-          <rect width="64" height="64" rx="14" fill="#1a1a2e"/>
+          <defs>
+            <linearGradient id="sg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#e94560"/><stop offset="100%" stop-color="#0f3460"/></linearGradient>
+          </defs>
+          <rect width="64" height="64" rx="14" class="logo-bg"/>
           <path d="M32 12C20.954 12 12 20.954 12 32s8.954 20 20 20c2.5 0 4.9-.46 7.1-1.3L48 54l-1.3-8.9A19.9 19.9 0 0052 32c0-11.046-8.954-20-20-20z" stroke="url(#sg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
           <circle cx="24" cy="32" r="3" fill="#e94560"/><circle cx="32" cy="32" r="3" fill="#e94560"/><circle cx="40" cy="32" r="3" fill="#e94560"/>
         </svg>
@@ -107,11 +111,11 @@ function initApp() {
     requestAnimationFrame(() => loadHistory())
   })
 
-  // 自动连接
+  // 自动连接（带重试）
   if (config?.host && config?.token) {
     connectBtn.disabled = true
     connectBtn.textContent = t('setup.connecting')
-    doConnect(config.host, config.token, errorEl, connectBtn)
+    autoConnect(config.host, config.token, errorEl, connectBtn, 0)
   }
 
   // 语言切换时重建连接页
@@ -150,7 +154,7 @@ function doConnect(host, token, errorEl, connectBtn) {
     errorEl.textContent = t('setup.error.timeout')
     connectBtn.disabled = false
     connectBtn.textContent = t('setup.connect')
-  }, 10000)
+  }, 15000)
 
   wsClient.onStatusChange((status) => {
     if (resolved) return
@@ -165,6 +169,67 @@ function doConnect(host, token, errorEl, connectBtn) {
   })
 
   wsClient.connect(host, token)
+}
+
+/** 自动连接带重试 */
+function autoConnect(host, token, errorEl, connectBtn, attempt) {
+  wsClient.disconnect()
+
+  let resolved = false
+  const timeout = setTimeout(() => {
+    if (resolved) return
+    resolved = true
+    if (attempt < AUTO_RETRY_MAX - 1) {
+      // 重试
+      errorEl.textContent = t('setup.auto.retry')
+      setTimeout(() => autoConnect(host, token, errorEl, connectBtn, attempt + 1), 2000)
+    } else {
+      // 重试用完，让用户手动连
+      errorEl.textContent = t('setup.auto.fail')
+      connectBtn.disabled = false
+      connectBtn.textContent = t('setup.connect')
+    }
+  }, 12000)
+
+  wsClient.onStatusChange((status) => {
+    if (resolved) return
+    if (status === 'ready') {
+      resolved = true
+      clearTimeout(timeout)
+      connectBtn.disabled = false
+      connectBtn.textContent = t('setup.connect')
+      errorEl.textContent = ''
+      // 首次使用显示引导
+      showGuideIfNeeded()
+    }
+  })
+
+  wsClient.connect(host, token)
+}
+
+/** 新用户引导 */
+function showGuideIfNeeded() {
+  if (localStorage.getItem(GUIDE_KEY)) return
+  localStorage.setItem(GUIDE_KEY, '1')
+
+  const overlay = document.createElement('div')
+  overlay.className = 'guide-overlay'
+  overlay.innerHTML = `
+    <div class="guide-card">
+      <h2>${t('guide.welcome')}</h2>
+      <div class="guide-tips">
+        <div class="guide-tip">${t('guide.tip1')}</div>
+        <div class="guide-tip">${t('guide.tip2')}</div>
+        <div class="guide-tip">${t('guide.tip3')}</div>
+        <div class="guide-tip">${t('guide.tip4')}</div>
+        <div class="guide-tip">${t('guide.tip5')}</div>
+      </div>
+      <button class="btn-primary guide-btn">${t('guide.start')}</button>
+    </div>
+  `
+  overlay.querySelector('.guide-btn').onclick = () => overlay.remove()
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove() }
+  document.body.appendChild(overlay)
 }
 
 initApp()

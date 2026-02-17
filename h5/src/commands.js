@@ -1,55 +1,63 @@
-const COMMAND_GROUPS = [
-  {
-    title: '模型管理',
-    commands: [
-      { cmd: '/model', desc: '切换模型（需补充参数）', fill: true },
-      { cmd: '/model list', desc: '列出可用模型' },
-      { cmd: '/model status', desc: '当前模型状态' },
-    ],
-  },
-  {
-    title: '会话管理',
-    commands: [
-      { cmd: '/new', desc: '新建会话' },
-      { cmd: '/reset', desc: '重置当前会话' },
-      { cmd: '/compact', desc: '压缩上下文' },
-      { cmd: '/stop', desc: '停止当前任务' },
-    ],
-  },
-  {
-    title: '思考控制',
-    commands: [
-      { cmd: '/think off', desc: '关闭思考' },
-      { cmd: '/think low', desc: '低强度思考' },
-      { cmd: '/think medium', desc: '中等思考' },
-      { cmd: '/think high', desc: '高强度思考' },
-    ],
-  },
-  {
-    title: '信息查询',
-    commands: [
-      { cmd: '/help', desc: '帮助信息' },
-      { cmd: '/status', desc: '系统状态' },
-      { cmd: '/whoami', desc: '当前身份' },
-      { cmd: '/commands', desc: '所有指令' },
-      { cmd: '/context', desc: '上下文信息' },
-    ],
-  },
-  {
-    title: '技能',
-    commands: [
-      { cmd: '/skill ', desc: '执行技能（需补充名称）', fill: true },
-    ],
-  },
-  {
-    title: '高级',
-    commands: [
-      { cmd: '/verbose on', desc: '开启详细输出' },
-      { cmd: '/verbose off', desc: '关闭详细输出' },
-      { cmd: '/compact ', desc: '压缩上下文（可附指令）', fill: true },
-    ],
-  },
-]
+/**
+ * 快捷指令面板 - 支持 i18n
+ */
+
+import { t } from './i18n.js'
+
+function getCommandGroups() {
+  return [
+    {
+      titleKey: 'cmd.model',
+      commands: [
+        { cmd: '/model', descKey: 'cmd.model.switch', fill: true },
+        { cmd: '/model list', descKey: 'cmd.model.list' },
+        { cmd: '/model status', descKey: 'cmd.model.status' },
+      ],
+    },
+    {
+      titleKey: 'cmd.session',
+      commands: [
+        { cmd: '/new', descKey: 'cmd.session.new' },
+        { cmd: '/reset', descKey: 'cmd.session.reset' },
+        { cmd: '/compact', descKey: 'cmd.session.compact' },
+        { cmd: '/stop', descKey: 'cmd.session.stop' },
+      ],
+    },
+    {
+      titleKey: 'cmd.think',
+      commands: [
+        { cmd: '/think off', descKey: 'cmd.think.off' },
+        { cmd: '/think low', descKey: 'cmd.think.low' },
+        { cmd: '/think medium', descKey: 'cmd.think.medium' },
+        { cmd: '/think high', descKey: 'cmd.think.high' },
+      ],
+    },
+    {
+      titleKey: 'cmd.info',
+      commands: [
+        { cmd: '/help', descKey: 'cmd.info.help' },
+        { cmd: '/status', descKey: 'cmd.info.status' },
+        { cmd: '/whoami', descKey: 'cmd.info.whoami' },
+        { cmd: '/commands', descKey: 'cmd.info.commands' },
+        { cmd: '/context', descKey: 'cmd.info.context' },
+      ],
+    },
+    {
+      titleKey: 'cmd.skill',
+      commands: [
+        { cmd: '/skill ', descKey: 'cmd.skill.run', fill: true },
+      ],
+    },
+    {
+      titleKey: 'cmd.advanced',
+      commands: [
+        { cmd: '/verbose on', descKey: 'cmd.advanced.verbose.on' },
+        { cmd: '/verbose off', descKey: 'cmd.advanced.verbose.off' },
+        { cmd: '/compact ', descKey: 'cmd.advanced.compact', fill: true },
+      ],
+    },
+  ]
+}
 
 let _overlay = null
 let _panel = null
@@ -57,10 +65,13 @@ let _onSelect = null
 
 export function initCommands(onSelect) {
   _onSelect = onSelect
-  _createPanel()
 }
 
-function _createPanel() {
+function _buildPanel() {
+  // 每次打开重建，确保语言最新
+  _overlay?.remove()
+  _panel?.remove()
+
   _overlay = document.createElement('div')
   _overlay.className = 'cmd-overlay'
   _overlay.onclick = () => hideCommands()
@@ -71,7 +82,7 @@ function _createPanel() {
   const header = document.createElement('div')
   header.className = 'cmd-panel-header'
   header.innerHTML = `
-    <h3>快捷指令</h3>
+    <h3>${t('cmd.title')}</h3>
     <button class="close-btn">×</button>
   `
   header.querySelector('.close-btn').onclick = () => hideCommands()
@@ -79,26 +90,23 @@ function _createPanel() {
   const list = document.createElement('div')
   list.className = 'cmd-list'
 
-  COMMAND_GROUPS.forEach(group => {
+  getCommandGroups().forEach(group => {
     const title = document.createElement('div')
     title.className = 'cmd-group-title'
-    title.textContent = group.title
+    title.textContent = t(group.titleKey)
     list.appendChild(title)
 
-    group.commands.forEach(({ cmd, desc, fill }) => {
+    group.commands.forEach(({ cmd, descKey, fill }) => {
       const item = document.createElement('div')
       item.className = 'cmd-item'
       item.innerHTML = `
         <span class="cmd-text">${cmd}</span>
-        <span class="cmd-desc">${desc}</span>
+        <span class="cmd-desc">${t(descKey)}</span>
       `
       item.onclick = () => {
         hideCommands()
-        if (fill) {
-          _onSelect?.(cmd + ' ', true)
-        } else {
-          _onSelect?.(cmd, false)
-        }
+        if (fill) _onSelect?.(cmd + ' ', true)
+        else _onSelect?.(cmd, false)
       }
       list.appendChild(item)
     })
@@ -111,6 +119,7 @@ function _createPanel() {
 }
 
 export function showCommands() {
+  _buildPanel()
   _overlay?.classList.add('visible')
   _panel?.classList.add('visible')
 }

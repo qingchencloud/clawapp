@@ -66,6 +66,10 @@
 [data-theme="light"] .hl-func { color: #6f42c1; }
 [data-theme="light"] .hl-type { color: #e36209; }
 
+/* Logo 背景适配 */
+.logo-bg { fill: #1a1a2e; }
+[data-theme="light"] .logo-bg { fill: #e8e8ea; }
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;

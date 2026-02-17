@@ -19,6 +19,7 @@ function uuid() {
 
 const REQUEST_TIMEOUT = 30000
 const MAX_RECONNECT_DELAY = 30000
+const PING_INTERVAL = 25000  // 客户端心跳间隔
 
 export class WsClient {
   constructor() {
@@ -36,6 +37,7 @@ export class WsClient {
     this._hello = null
     this._sessionKey = null
     this._readyCallbacks = []
+    this._pingTimer = null
   }
 
   get connected() { return this._connected }
@@ -60,6 +62,7 @@ export class WsClient {
 
   disconnect() {
     this._intentionalClose = true
+    this._stopPing()
     this._cleanup()
     if (this._ws) { this._ws.close(); this._ws = null }
     this._setConnected(false)
@@ -75,6 +78,7 @@ export class WsClient {
     this._ws.onopen = () => {
       this._reconnectAttempts = 0
       this._setConnected(true)
+      this._startPing()
     }
 
     this._ws.onmessage = (evt) => {
@@ -103,6 +107,7 @@ export class WsClient {
     this._ws.onclose = () => {
       this._setConnected(false)
       this._gatewayReady = false
+      this._stopPing()
       this._cleanup()
       if (!this._intentionalClose) this._scheduleReconnect()
     }
@@ -144,6 +149,21 @@ export class WsClient {
     this._reconnectAttempts++
     this._setConnected(false, 'reconnecting')
     this._reconnectTimer = setTimeout(() => this._doConnect(), delay)
+  }
+
+  /** 客户端心跳：定期发 ping 帧保持连接活跃 */
+  _startPing() {
+    this._stopPing()
+    this._pingTimer = setInterval(() => {
+      if (this._ws && this._ws.readyState === WebSocket.OPEN) {
+        // 浏览器 WebSocket 没有 ping() 方法，发一个轻量的应用层心跳
+        try { this._ws.send('{"type":"ping"}') } catch {}
+      }
+    }, PING_INTERVAL)
+  }
+
+  _stopPing() {
+    if (this._pingTimer) { clearInterval(this._pingTimer); this._pingTimer = null }
   }
 
   request(method, params = {}) {
