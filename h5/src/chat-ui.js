@@ -17,7 +17,6 @@ let _currentAiText = ''
 let _currentRunId = null
 let _toolCards = new Map()
 let _onSettingsCallback = null
-let _useChatDelta = false  // 标记是否收到过 chat delta，避免两个事件源重复渲染
 let _renderTimer = null    // 节流渲染定时器
 const RENDER_THROTTLE = 50 // 渲染节流间隔 ms
 
@@ -173,10 +172,8 @@ function handleChatEvent(payload) {
   const { state } = payload
 
   if (state === 'delta') {
-    // chat delta 的 message 是累积文本（完整消息对象）
     const text = extractText(payload.message)
     if (text && text.length > _currentAiText.length) {
-      _useChatDelta = true  // 标记：优先用 chat delta
       showTyping(false)
       if (!_currentAiBubble) { _currentAiBubble = createAiBubble(); _currentRunId = payload.runId }
       _currentAiText = text
@@ -230,16 +227,10 @@ function handleAgentEvent(payload) {
     return
   }
 
-  // agent assistant 事件的 data.text 是增量文本
-  // 如果已经在用 chat delta（累积），就跳过 agent assistant（增量），避免重复
+  // agent assistant 事件 — 不再处理文本，完全依赖 chat delta
+  // 只保留 lifecycle 和 tool 事件
   if (stream === 'assistant') {
-    if (_useChatDelta) return
-    showTyping(false)
-    if (data?.text) {
-      if (!_currentAiBubble) { _currentAiBubble = createAiBubble(); _currentRunId = runId }
-      _currentAiText += data.text
-      throttledRender()
-    }
+    // 忽略文本增量，chat delta 已经提供累积文本
     return
   }
 
@@ -277,7 +268,6 @@ function resetStreamState() {
   _currentAiText = ''
   _currentRunId = null
   _isStreaming = false
-  _useChatDelta = false
   _toolCards.clear()
   updateSendState()
 }
