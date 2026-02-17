@@ -262,3 +262,46 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
+/* 会话选择器 */
+.session-panel {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  width: 100%;
+  max-width: 428px;
+  max-height: 65vh;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  z-index: 101;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: var(--safe-bottom);
+}
+
+.session-overlay {
+  z-index: 100;
+}
+
+.session-loading {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 24px 16px;
+  font-size: 14px;
+}
+
+.session-active {
+  background: rgba(233, 69, 96, 0.08) !important;
+}
+
+#session-title {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#session-title:active {
+  opacity: 0.7;
+}

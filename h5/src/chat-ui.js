@@ -14,6 +14,7 @@ let _currentAiBubble = null
 let _currentAiText = ''
 let _currentRunId = null
 let _toolCards = new Map()
+let _onSettingsCallback = null
 
 const SVG_SEND = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>`
 const SVG_ATTACH = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>`
@@ -47,7 +48,7 @@ export function createChatPage() {
   page.innerHTML = `
     <div class="chat-header">
       <div class="status-dot" id="status-dot"></div>
-      <div class="title">OpenClaw Mobile</div>
+      <div class="title" id="session-title">OpenClaw Mobile</div>
       <button class="settings-btn" id="settings-btn">${SVG_SETTINGS}</button>
     </div>
     <div class="chat-messages" id="chat-messages">
@@ -64,7 +65,7 @@ export function createChatPage() {
   return page
 }
 
-export function setSessionKey(key) { _sessionKey = key }
+export function setSessionKey(key) { _sessionKey = key; updateSessionTitle() }
 export function getSessionKey() { return _sessionKey }
 
 export function initChatUI(onSettings) {
@@ -73,10 +74,12 @@ export function initChatUI(onSettings) {
   _textarea = document.getElementById('chat-input')
   _sendBtn = document.getElementById('send-btn')
   _previewBar = document.getElementById('preview-bar')
+  _onSettingsCallback = onSettings
 
   initMedia(_previewBar, updateSendState)
 
   document.getElementById('settings-btn').onclick = onSettings
+  document.getElementById('session-title').onclick = () => showSessionPicker()
   document.getElementById('cmd-btn').onclick = () => showCommands()
   document.getElementById('attach-btn').onclick = () => pickImage()
   _sendBtn.onclick = () => handleSendClick()
@@ -374,4 +377,126 @@ export async function loadHistory() {
 
 export function abortChat() {
   wsClient.chatAbort(_sessionKey, _currentRunId).catch(() => {})
+}
+
+/** 更新标题栏显示当前会话名 */
+function updateSessionTitle() {
+  const titleEl = document.getElementById('session-title')
+  if (!titleEl) return
+  // 从 sessionKey 提取可读名称
+  // 格式: agent:main:main 或 agent:main:qqbot:dm:xxx
+  const parts = _sessionKey.split(':')
+  let label = 'OpenClaw Mobile'
+  if (parts.length >= 3) {
+    const agent = parts[1]
+    const channel = parts.slice(2).join(':')
+    if (channel === 'main') label = `主会话`
+    else label = channel.length > 20 ? channel.substring(0, 20) + '…' : channel
+  }
+  titleEl.textContent = label
+  titleEl.title = _sessionKey
+}
+
+/** 会话选择面板 */
+async function showSessionPicker() {
+  // 移除已有面板
+  document.querySelector('.session-overlay')?.remove()
+  document.querySelector('.session-panel')?.remove()
+
+  const overlay = document.createElement('div')
+  overlay.className = 'session-overlay cmd-overlay visible'
+  overlay.onclick = () => closeSessionPicker()
+
+  const panel = document.createElement('div')
+  panel.className = 'session-panel cmd-panel visible'
+  panel.innerHTML = `
+    <div class="cmd-panel-header">
+      <h3>切换会话</h3>
+      <button class="close-btn">×</button>
+    </div>
+    <div class="session-list cmd-list">
+      <div class="session-loading">加载中...</div>
+    </div>
+  `
+  panel.querySelector('.close-btn').onclick = () => closeSessionPicker()
+
+  document.body.appendChild(overlay)
+  document.body.appendChild(panel)
+
+  // 加载会话列表
+  try {
+    const result = await wsClient.sessionsList(50)
+    const sessions = result?.sessions || result || []
+    const listEl = panel.querySelector('.session-list')
+    listEl.innerHTML = ''
+
+    if (!sessions.length) {
+      listEl.innerHTML = '<div class="session-loading">没有找到会话</div>'
+      return
+    }
+
+    sessions.forEach(s => {
+      const key = s.sessionKey || s.key || ''
+      const isActive = key === _sessionKey
+      const item = document.createElement('div')
+      item.className = `cmd-item${isActive ? ' session-active' : ''}`
+
+      // 解析会话信息
+      const parts = key.split(':')
+      let name = key
+      let detail = ''
+      if (parts.length >= 3) {
+        const agent = parts[1]
+        const channel = parts.slice(2).join(':')
+        name = channel === 'main' ? `主会话 (${agent})` : channel
+        detail = agent !== 'main' ? `agent: ${agent}` : ''
+      }
+
+      // 最后活跃时间
+      const updated = s.updatedAt || s.lastActivity
+      let timeStr = ''
+      if (updated) {
+        const d = new Date(updated)
+        const now = new Date()
+        const diffMin = Math.floor((now - d) / 60000)
+        if (diffMin < 1) timeStr = '刚刚'
+        else if (diffMin < 60) timeStr = `${diffMin}分钟前`
+        else if (diffMin < 1440) timeStr = `${Math.floor(diffMin / 60)}小时前`
+        else timeStr = `${Math.floor(diffMin / 1440)}天前`
+      }
+
+      item.innerHTML = `
+        <div style="flex:1;min-width:0">
+          <div class="cmd-text" style="font-family:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeText(name)}</div>
+          ${detail ? `<div class="cmd-desc">${escapeText(detail)}</div>` : ''}
+        </div>
+        ${timeStr ? `<div class="cmd-desc" style="flex-shrink:0">${timeStr}</div>` : ''}
+        ${isActive ? '<div style="color:var(--success);flex-shrink:0">●</div>' : ''}
+      `
+
+      item.onclick = () => {
+        if (key === _sessionKey) { closeSessionPicker(); return }
+        switchSession(key)
+        closeSessionPicker()
+      }
+
+      listEl.appendChild(item)
+    })
+  } catch (e) {
+    const listEl = panel.querySelector('.session-list')
+    listEl.innerHTML = `<div class="session-loading" style="color:var(--danger)">加载失败: ${escapeText(e.message)}</div>`
+  }
+}
+
+function closeSessionPicker() {
+  document.querySelector('.session-overlay')?.remove()
+  document.querySelector('.session-panel')?.remove()
+}
+
+/** 切换到指定会话 */
+function switchSession(newKey) {
+  _sessionKey = newKey
+  resetStreamState()
+  updateSessionTitle()
+  loadHistory()
 }

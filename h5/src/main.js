@@ -92,10 +92,11 @@ function initApp() {
       initChatUI(() => {
         wsClient.disconnect()
         showPage('setup-page')
+        chatInitialized = false
       })
     }
-    // 每次就绪后加载历史
-    loadHistory()
+    // 确保 DOM 就绪后再加载历史
+    requestAnimationFrame(() => loadHistory())
   })
 
   // 自动连接

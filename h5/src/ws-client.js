@@ -170,6 +170,10 @@ export class WsClient {
     return this.request('chat.abort', params)
   }
 
+  sessionsList(limit = 50) {
+    return this.request('sessions.list', { limit })
+  }
+
   onEvent(callback) {
     this._eventListeners.push(callback)
     return () => { this._eventListeners = this._eventListeners.filter(fn => fn !== callback) }
