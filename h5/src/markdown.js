@@ -44,7 +44,7 @@ export function renderMarkdown(text) {
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
     const highlighted = highlightCode(code.trimEnd(), lang)
     const langLabel = lang ? `<span class="code-lang">${escapeHtml(lang)}</span>` : ''
-    return `<pre data-lang="${escapeHtml(lang)}">${langLabel}<button class="code-copy-btn" onclick="window.__copyCode(this)">复制</button><code>${highlighted}</code></pre>`
+    return `<pre data-lang="${escapeHtml(lang)}">${langLabel}<button class="code-copy-btn" onclick="window.__copyCode(this)">Copy</button><code>${highlighted}</code></pre>`
   })
 
   html = html.replace(/`([^`\n]+)`/g, (_, code) =>
@@ -136,10 +136,10 @@ window.__copyCode = function(btn) {
   const code = pre.querySelector('code')
   const text = code.innerText
   navigator.clipboard.writeText(text).then(() => {
-    btn.textContent = '已复制'
-    setTimeout(() => { btn.textContent = '复制' }, 1500)
+    btn.textContent = '✓'
+    setTimeout(() => { btn.textContent = 'Copy' }, 1500)
   }).catch(() => {
-    btn.textContent = '失败'
-    setTimeout(() => { btn.textContent = '复制' }, 1500)
+    btn.textContent = '✗'
+    setTimeout(() => { btn.textContent = 'Copy' }, 1500)
   })
 }

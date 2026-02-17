@@ -1,8 +1,14 @@
 import './style.css'
 import { wsClient } from './ws-client.js'
 import { createChatPage, initChatUI, setSessionKey, loadHistory } from './chat-ui.js'
+import { initI18n, t, onLangChange } from './i18n.js'
+import { initTheme } from './theme.js'
 
 const STORAGE_KEY = 'openclaw-config'
+
+// 初始化 i18n 和主题
+initI18n()
+initTheme()
 
 const app = document.getElementById('app')
 
@@ -18,7 +24,9 @@ function createSetupPage() {
   const page = document.createElement('div')
   page.className = 'page setup-page'
   page.id = 'setup-page'
-  const defaultHost = location.hostname ? `${location.hostname}:3210` : 'localhost:3210'
+  const defaultHost = location.hostname && location.hostname !== 'localhost'
+    ? `${location.hostname}:${location.port || 3210}`
+    : 'localhost:3210'
 
   page.innerHTML = `
     <div class="setup-card">
@@ -29,18 +37,18 @@ function createSetupPage() {
           <path d="M32 12C20.954 12 12 20.954 12 32s8.954 20 20 20c2.5 0 4.9-.46 7.1-1.3L48 54l-1.3-8.9A19.9 19.9 0 0052 32c0-11.046-8.954-20-20-20z" stroke="url(#sg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
           <circle cx="24" cy="32" r="3" fill="#e94560"/><circle cx="32" cy="32" r="3" fill="#e94560"/><circle cx="40" cy="32" r="3" fill="#e94560"/>
         </svg>
-        <h1>OpenClaw Mobile</h1>
-        <p>连接到你的 OpenClaw 智能体</p>
+        <h1>${t('app.title')}</h1>
+        <p>${t('app.subtitle')}</p>
       </div>
       <div class="form-group">
-        <label>服务器地址</label>
-        <input type="text" id="input-host" placeholder="${defaultHost}" value="${defaultHost}" />
+        <label>${t('setup.host')}</label>
+        <input type="text" id="input-host" placeholder="${t('setup.host.placeholder')}" value="${defaultHost}" />
       </div>
       <div class="form-group">
-        <label>Token</label>
-        <input type="password" id="input-token" placeholder="输入访问令牌" />
+        <label>${t('setup.token')}</label>
+        <input type="password" id="input-token" placeholder="${t('setup.token.placeholder')}" />
       </div>
-      <button class="btn-primary" id="connect-btn">连接</button>
+      <button class="btn-primary" id="connect-btn">${t('setup.connect')}</button>
       <div class="setup-error" id="setup-error"></div>
     </div>
   `
@@ -73,11 +81,11 @@ function initApp() {
   connectBtn.onclick = () => {
     const host = hostInput.value.trim()
     const token = tokenInput.value.trim()
-    if (!host) { errorEl.textContent = '请输入服务器地址'; return }
-    if (!token) { errorEl.textContent = '请输入 Token'; return }
+    if (!host) { errorEl.textContent = t('setup.error.host'); return }
+    if (!token) { errorEl.textContent = t('setup.error.token'); return }
     errorEl.textContent = ''
     connectBtn.disabled = true
-    connectBtn.textContent = '连接中...'
+    connectBtn.textContent = t('setup.connecting')
     doConnect(host, token, errorEl, connectBtn)
   }
 
@@ -102,9 +110,34 @@ function initApp() {
   // 自动连接
   if (config?.host && config?.token) {
     connectBtn.disabled = true
-    connectBtn.textContent = '连接中...'
+    connectBtn.textContent = t('setup.connecting')
     doConnect(config.host, config.token, errorEl, connectBtn)
   }
+
+  // 语言切换时重建连接页
+  onLangChange(() => {
+    if (document.getElementById('setup-page')?.classList.contains('hidden')) return
+    const newSetup = createSetupPage()
+    const oldSetup = document.getElementById('setup-page')
+    oldSetup.replaceWith(newSetup)
+    // 重新绑定事件
+    const btn = document.getElementById('connect-btn')
+    const hi = document.getElementById('input-host')
+    const ti = document.getElementById('input-token')
+    const err = document.getElementById('setup-error')
+    if (config) { hi.value = config.host; ti.value = config.token }
+    btn.onclick = () => {
+      const host = hi.value.trim()
+      const token = ti.value.trim()
+      if (!host) { err.textContent = t('setup.error.host'); return }
+      if (!token) { err.textContent = t('setup.error.token'); return }
+      err.textContent = ''
+      btn.disabled = true
+      btn.textContent = t('setup.connecting')
+      doConnect(host, token, err, btn)
+    }
+    ti.onkeydown = (e) => { if (e.key === 'Enter') btn.click() }
+  })
 }
 
 function doConnect(host, token, errorEl, connectBtn) {
@@ -114,9 +147,9 @@ function doConnect(host, token, errorEl, connectBtn) {
   const timeout = setTimeout(() => {
     if (resolved) return
     resolved = true
-    errorEl.textContent = '连接超时，请检查地址和网络'
+    errorEl.textContent = t('setup.error.timeout')
     connectBtn.disabled = false
-    connectBtn.textContent = '连接'
+    connectBtn.textContent = t('setup.connect')
   }, 10000)
 
   wsClient.onStatusChange((status) => {
@@ -126,7 +159,7 @@ function doConnect(host, token, errorEl, connectBtn) {
       clearTimeout(timeout)
       saveConfig(host, token)
       connectBtn.disabled = false
-      connectBtn.textContent = '连接'
+      connectBtn.textContent = t('setup.connect')
       errorEl.textContent = ''
     }
   })

@@ -2,6 +2,8 @@ import { wsClient } from './ws-client.js'
 import { renderMarkdown } from './markdown.js'
 import { initMedia, pickImage, getAttachments, clearAttachments, hasAttachments, showLightbox } from './media.js'
 import { initCommands, showCommands } from './commands.js'
+import { t, formatRelativeTime } from './i18n.js'
+import { initSettings, showSettings } from './settings.js'
 
 let _messagesEl = null
 let _typingEl = null
@@ -61,7 +63,7 @@ export function createChatPage() {
     <div class="chat-input-area">
       <button class="icon-btn" id="cmd-btn">${SVG_CMD}</button>
       <button class="icon-btn" id="attach-btn">${SVG_ATTACH}</button>
-      <div class="input-wrapper"><textarea id="chat-input" rows="1" placeholder="输入消息..."></textarea></div>
+      <div class="input-wrapper"><textarea id="chat-input" rows="1" placeholder="${t('chat.input.placeholder')}"></textarea></div>
       <button class="send-btn" id="send-btn" disabled>${SVG_SEND}</button>
     </div>
   `
@@ -80,8 +82,9 @@ export function initChatUI(onSettings) {
   _onSettingsCallback = onSettings
 
   initMedia(_previewBar, updateSendState)
+  initSettings(onSettings)
 
-  document.getElementById('settings-btn').onclick = onSettings
+  document.getElementById('settings-btn').onclick = () => showSettings()
   document.getElementById('session-title').onclick = () => showSessionPicker()
   document.getElementById('cmd-btn').onclick = () => showCommands()
   document.getElementById('attach-btn').onclick = () => pickImage()
@@ -149,10 +152,10 @@ async function sendMessage() {
     await wsClient.chatSend(_sessionKey, text, attachments.length ? attachments : undefined)
   } catch (err) {
     showTyping(false)
-    if (err.message.includes('未连接') || err.message.includes('超时') || err.message.includes('重连')) {
-      appendSystemMessage('连接中断，正在重连...')
+    if (err.message.includes('未连接') || err.message.includes('超时') || err.message.includes('重连') || err.message.includes('timeout') || err.message.includes('reconnect')) {
+      appendSystemMessage(t('chat.reconnecting'))
     } else {
-      appendSystemMessage(`发送失败: ${err.message}`)
+      appendSystemMessage(`${t('chat.send.error')}: ${err.message}`)
     }
   }
 }
@@ -202,7 +205,7 @@ function handleChatEvent(payload) {
         bindImageClicks(_currentAiBubble)
       }
     }
-    appendSystemMessage('已中止')
+    appendSystemMessage(t('chat.aborted'))
     resetStreamState()
     return
   }
@@ -322,7 +325,7 @@ function updateToolCard(card, status) {
 }
 
 function statusText(s) {
-  const map = { running: '执行中...', done: '已完成', error: '失败' }
+  const map = { running: t('tool.running'), done: t('tool.done'), error: t('tool.error') }
   return map[s] || s
 }
 
@@ -391,7 +394,7 @@ export async function loadHistory() {
     // 先清空旧消息（不管新历史是否为空）
     clearMessages()
     if (!result?.messages?.length) {
-      appendSystemMessage('暂无消息')
+      appendSystemMessage(t('chat.no.messages'))
       return
     }
     // 渲染历史消息
@@ -404,7 +407,7 @@ export async function loadHistory() {
     scrollToBottom()
   } catch (e) {
     console.error('[chat] loadHistory error:', e)
-    appendSystemMessage(`加载历史失败: ${e.message}`)
+    appendSystemMessage(`${t('chat.load.error')}: ${e.message}`)
   }
 }
 
@@ -430,7 +433,7 @@ function updateSessionTitle() {
   if (parts.length >= 3) {
     const agent = parts[1]
     const channel = parts.slice(2).join(':')
-    if (channel === 'main') label = `主会话`
+    if (channel === 'main') label = t('session.main')
     else label = channel.length > 20 ? channel.substring(0, 20) + '…' : channel
   }
   titleEl.textContent = label
@@ -451,7 +454,7 @@ async function showSessionPicker() {
   panel.className = 'session-panel cmd-panel visible'
   panel.innerHTML = `
     <div class="cmd-panel-header">
-      <h3>会话管理</h3>
+      <h3>${t('session.title')}</h3>
       <div style="display:flex;gap:8px;align-items:center">
         <button class="session-action-btn" id="session-new-btn" title="新建会话">＋</button>
         <button class="close-btn">×</button>
@@ -474,7 +477,7 @@ async function showSessionPicker() {
 async function refreshSessionList() {
   const listEl = document.querySelector('.session-list')
   if (!listEl) return
-  listEl.innerHTML = '<div class="session-loading">加载中...</div>'
+  listEl.innerHTML = '<div class="session-loading">' + t('session.loading') + '</div>'
 
   try {
     const result = await wsClient.sessionsList(50)
@@ -482,7 +485,7 @@ async function refreshSessionList() {
     listEl.innerHTML = ''
 
     if (!sessions.length) {
-      listEl.innerHTML = '<div class="session-loading">没有找到会话</div>'
+      listEl.innerHTML = '<div class="session-loading">' + t('session.empty') + '</div>'
       return
     }
 
@@ -499,22 +502,13 @@ async function refreshSessionList() {
       if (parts.length >= 3) {
         const agent = parts[1]
         const channel = parts.slice(2).join(':')
-        name = channel === 'main' ? `主会话 (${agent})` : channel
+        name = channel === 'main' ? `${t('session.main')} (${agent})` : channel
         detail = agent !== 'main' ? `agent: ${agent}` : ''
       }
 
       // 最后活跃时间
       const updated = s.updatedAt || s.lastActivity
-      let timeStr = ''
-      if (updated) {
-        const d = new Date(updated)
-        const now = new Date()
-        const diffMin = Math.floor((now - d) / 60000)
-        if (diffMin < 1) timeStr = '刚刚'
-        else if (diffMin < 60) timeStr = `${diffMin}分钟前`
-        else if (diffMin < 1440) timeStr = `${Math.floor(diffMin / 60)}小时前`
-        else timeStr = `${Math.floor(diffMin / 1440)}天前`
-      }
+      const timeStr = formatRelativeTime(updated)
 
       item.innerHTML = `
         <div class="session-item-content" style="flex:1;min-width:0">
@@ -542,7 +536,7 @@ async function refreshSessionList() {
       listEl.appendChild(item)
     })
   } catch (e) {
-    listEl.innerHTML = `<div class="session-loading" style="color:var(--danger)">加载失败: ${escapeText(e.message)}</div>`
+    listEl.innerHTML = `<div class="session-loading" style="color:var(--danger)">${t('session.load.error')}: ${escapeText(e.message)}</div>`
   }
 }
 
@@ -556,18 +550,18 @@ function promptNewSession() {
   const dialog = document.createElement('div')
   dialog.className = 'session-dialog'
   dialog.innerHTML = `
-    <h3>新建会话</h3>
+    <h3>${t('session.new')}</h3>
     <div class="form-group" style="margin:16px 0">
-      <label style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;display:block">会话名称</label>
-      <input type="text" id="new-session-name" placeholder="例如: debug、research" 
+      <label style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;display:block">${t('session.new.name')}</label>
+      <input type="text" id="new-session-name" placeholder="${t('session.new.name.placeholder')}" 
         style="width:100%;height:40px;background:var(--bg-primary);border:1px solid var(--border);border-radius:8px;padding:0 12px;color:var(--text-primary);font-size:14px;outline:none" />
       <div style="font-size:11px;color:var(--text-muted);margin-top:6px">
-        会话 Key 格式: agent:main:&lt;名称&gt;
+        ${t('session.new.hint')}
       </div>
     </div>
     <div style="display:flex;gap:10px;justify-content:flex-end">
-      <button class="session-dialog-btn cancel">取消</button>
-      <button class="session-dialog-btn confirm">创建</button>
+      <button class="session-dialog-btn cancel">${t('cancel')}</button>
+      <button class="session-dialog-btn confirm">${t('session.new.create')}</button>
     </div>
   `
 
@@ -580,7 +574,7 @@ function promptNewSession() {
     overlay.remove()
     dialog.remove()
     switchSession(newKey)
-    appendSystemMessage(`已创建新会话: ${name}`)
+    appendSystemMessage(t('session.created', { name }))
   }
 
   document.body.appendChild(overlay)
@@ -599,13 +593,13 @@ function confirmDeleteSession(key, name) {
   const dialog = document.createElement('div')
   dialog.className = 'session-dialog'
   dialog.innerHTML = `
-    <h3>删除会话</h3>
+    <h3>${t('session.delete')}</h3>
     <p style="color:var(--text-secondary);font-size:14px;margin:12px 0">
-      确定删除「${escapeText(name)}」？<br>此操作不可撤销。
+      ${t('session.delete.confirm', { name: escapeText(name) })}<br>${t('session.delete.warning')}
     </p>
     <div style="display:flex;gap:10px;justify-content:flex-end">
-      <button class="session-dialog-btn cancel">取消</button>
-      <button class="session-dialog-btn danger">删除</button>
+      <button class="session-dialog-btn cancel">${t('cancel')}</button>
+      <button class="session-dialog-btn danger">${t('session.delete.btn')}</button>
     </div>
   `
 
@@ -623,7 +617,7 @@ function confirmDeleteSession(key, name) {
       }
       await refreshSessionList()
     } catch (e) {
-      appendSystemMessage(`删除失败: ${e.message}`)
+      appendSystemMessage(`${t('session.delete.fail')}: ${e.message}`)
     }
   }
 
