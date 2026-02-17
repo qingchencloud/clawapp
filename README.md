@@ -12,12 +12,15 @@
   <a href="#remote">外网访问</a> •
   <a href="#config">配置参数</a> •
   <a href="#faq">常见问题</a> •
+  <a href="#community">社区交流</a> •
   <a href="#english">English</a>
 </p>
 
 <p align="center">
   <a href="https://clawapp.qt.cool">🌐 产品主页</a> •
-  <a href="https://github.com/1186258278/OpenClawChineseTranslation">🇨🇳 OpenClaw 中文汉化版</a>
+  <a href="https://github.com/1186258278/OpenClawChineseTranslation">🇨🇳 OpenClaw 中文汉化版</a> •
+  <a href="https://discord.com/invite/U9AttmsNHh">💬 Discord</a> •
+  <a href="https://yb.tencent.com/gp/i/LsvIw7mdR7Lb">🤖 元宝派</a>
 </p>
 
 ---
