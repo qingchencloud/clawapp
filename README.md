@@ -416,6 +416,55 @@ PM2 会在进程崩溃时自动重启。如果 Gateway 没运行或 Token 错误
 
 是的。ClawApp 完全兼容原生 OpenClaw，不需要安装插件、不需要改配置、不需要开额外端口。只要 Gateway 在运行（默认 `127.0.0.1:18789`），把 Token 填到 `.env` 里就能用。
 
+**Q: 部署到远程服务器后访问不了？**
+
+1. 确认防火墙放行了 3210 端口：
+   ```bash
+   # Ubuntu/Debian
+   sudo ufw allow 3210/tcp
+   # CentOS/RHEL
+   sudo firewall-cmd --add-port=3210/tcp --permanent && sudo firewall-cmd --reload
+   ```
+2. 云服务器还需要在控制台安全组中放行 3210 端口
+3. 确认服务在监听：`ss -tlnp | grep 3210`
+4. 注意：远程服务器上也需要运行 OpenClaw Gateway，否则页面能打开但无法聊天
+
+**Q: 一键脚本安装的 Node.js (nvm) 在 PM2 重启后找不到？**
+
+nvm 安装的 Node.js 需要 source 才能生效。如果 PM2 通过 `pm2 startup` 设置了开机自启，重启后可能找不到 node。解决：
+
+```bash
+# 获取 node 的绝对路径
+which node  # 例如 /root/.nvm/versions/node/v22.22.0/bin/node
+
+# 用绝对路径启动 PM2
+pm2 startup
+pm2 save
+```
+
+或者将 nvm 的 node 软链到系统路径：
+```bash
+sudo ln -sf $(which node) /usr/local/bin/node
+sudo ln -sf $(which npm) /usr/local/bin/npm
+sudo ln -sf $(which pm2) /usr/local/bin/pm2
+```
+
+**Q: 能部署到没有 OpenClaw 的服务器上吗？**
+
+可以部署，但需要通过 SSH 隧道或反向代理将远程服务器的请求转发回运行 OpenClaw 的电脑。典型场景：
+
+```
+手机 → 远程服务器 ClawApp(:3210) → SSH隧道 → 本地电脑 Gateway(:18789)
+```
+
+在远程服务器上：
+```bash
+# 将远程的 18789 端口转发到本地电脑的 Gateway
+ssh -f -N -L 127.0.0.1:18789:127.0.0.1:18789 user@你的电脑IP
+```
+
+这样远程 ClawApp 就能通过 `ws://127.0.0.1:18789` 连接到你本地的 Gateway。
+
 ---
 
 <h2 id="security">安全建议</h2>
@@ -427,6 +476,8 @@ PM2 会在进程崩溃时自动重启。如果 Gateway 没运行或 Token 错误
 - Gateway Token 只在服务端 `.env` 中，不会暴露给客户端
 - 公网访问建议使用 HTTPS（Cloudflare Tunnel 或 Nginx + SSL）
 - 可选：使用 [Cloudflare Access](https://www.cloudflare.com/products/zero-trust/) 添加额外认证
+- 部署到公网服务器时，务必设置防火墙规则，只开放必要端口（3210）
+- 不要将 `.env` 文件提交到 Git（已在 `.gitignore` 中排除）
 
 ---
 
