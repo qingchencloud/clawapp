@@ -382,8 +382,16 @@ function handleChatEvent(payload) {
   }
 
   if (state === 'error') {
+    const errMsg = payload.errorMessage || '未知错误'
+    // 流式进行中（lifecycle start 已触发），Gateway 可能自动重试
+    if (_isStreaming) {
+      console.warn('[chat] 流式中临时错误，等待 Gateway 重试:', errMsg)
+      appendTransientWarning(`⚠ ${errMsg}`)
+      return
+    }
+    // 非流式状态，终态错误
     showTyping(false)
-    appendSystemMessage(`错误: ${payload.errorMessage || '未知错误'}`)
+    appendSystemMessage(`错误: ${errMsg}`)
     resetStreamState()
     processMessageQueue()
     return
@@ -399,6 +407,7 @@ function handleAgentEvent(payload) {
   if (stream === 'lifecycle') {
     if (data?.phase === 'start') {
       _currentRunId = runId; showTyping(true); _isStreaming = true; updateSendState()
+      clearTransientWarnings()
       // 安全超时：如果 60s 内没有 chat final / lifecycle end，强制重置
       clearTimeout(_streamSafetyTimer)
       _streamSafetyTimer = setTimeout(() => {
@@ -426,6 +435,7 @@ function handleAgentEvent(payload) {
       const cleaned = stripThinkingTags(text)
       if (cleaned && cleaned.length > _currentAiText.length) {
         showTyping(false)
+        clearTransientWarnings()
         if (!_currentAiBubble) { _currentAiBubble = createAiBubble(); _currentRunId = runId }
         _currentAiText = cleaned
         throttledRender()
@@ -609,6 +619,26 @@ function appendSystemMessage(text) {
   el.textContent = text
   _messagesEl.insertBefore(el, _typingEl)
   scrollToBottom()
+}
+
+/** 显示可自动消失的临时警告（流式恢复后淡出） */
+function appendTransientWarning(text) {
+  const el = document.createElement('div')
+  el.className = 'system-msg transient-warning'
+  el.textContent = text
+  _messagesEl.insertBefore(el, _typingEl)
+  scrollToBottom()
+  return el
+}
+
+/** 清除所有临时警告（流式恢复时调用） */
+function clearTransientWarnings() {
+  const warnings = _messagesEl.querySelectorAll('.transient-warning')
+  warnings.forEach(el => {
+    el.style.transition = 'opacity 0.5s'
+    el.style.opacity = '0'
+    setTimeout(() => el.remove(), 500)
+  })
 }
 
 function showTyping(show) {

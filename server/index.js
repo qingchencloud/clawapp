@@ -70,6 +70,8 @@ const UPSTREAM_LINGER = 120000;       // SSE 断开后上游保持 2min
 const EVENT_BUFFER_MAX = 200;
 const REQUEST_TIMEOUT = 30000;
 const CONNECT_TIMEOUT = 10000;
+const GATEWAY_RETRY_COUNT = 3;
+const GATEWAY_RETRY_DELAY = 1000;
 
 /**
  * 生成 connect 握手帧（含 Ed25519 device 签名）
@@ -357,13 +359,38 @@ app.post('/api/connect', async (req, res) => {
   sessions.set(sid, session);
 
   try {
-    // 连接 Gateway 并等待握手完成
-    const timeout = setTimeout(() => {
-      session._connectReject?.(new Error('连接超时'));
-    }, CONNECT_TIMEOUT);
+    // 连接 Gateway，失败时重试
+    let lastError;
+    for (let attempt = 1; attempt <= GATEWAY_RETRY_COUNT; attempt++) {
+      try {
+        const timeout = setTimeout(() => {
+          session._connectReject?.(new Error('连接超时'));
+        }, CONNECT_TIMEOUT);
 
-    await connectToGateway(sid);
-    clearTimeout(timeout);
+        await connectToGateway(sid);
+        clearTimeout(timeout);
+        lastError = null;
+        break;
+      } catch (e) {
+        lastError = e;
+        // 清理失败的上游连接，保留 session 壳子用于重试
+        if (session._heartbeat) { clearInterval(session._heartbeat); session._heartbeat = null; }
+        if (session._connectTimer) { clearTimeout(session._connectTimer); session._connectTimer = null; }
+        if (session.upstream && session.upstream.readyState !== WebSocket.CLOSED) {
+          session.upstream.close();
+        }
+        session.upstream = null;
+        session.state = 'init';
+        session.pendingRequests.clear();
+
+        if (attempt < GATEWAY_RETRY_COUNT) {
+          log.warn(`Gateway 连接失败 [${sid}] 第${attempt}次，${GATEWAY_RETRY_DELAY}ms 后重试: ${e.message}`);
+          await new Promise(r => setTimeout(r, GATEWAY_RETRY_DELAY));
+        }
+      }
+    }
+
+    if (lastError) throw lastError;
 
     const defaults = session.snapshot?.sessionDefaults;
     const sessionKey = defaults?.mainSessionKey || `agent:${defaults?.defaultAgentId || 'main'}:main`;

@@ -73,6 +73,12 @@ export class WsClient {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token }),
       })
+
+      // 容错：CF Tunnel 502 等情况会返回 HTML 而非 JSON
+      const contentType = res.headers.get('content-type') || ''
+      if (!contentType.includes('application/json')) {
+        throw new Error(`服务暂时不可用 (${res.status})`)
+      }
       const data = await res.json()
 
       if (!data.ok) {
