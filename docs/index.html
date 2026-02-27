@@ -134,6 +134,10 @@ section{padding:100px 0}
 .features{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 @media(max-width:960px){.features{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:580px){.features{grid-template-columns:1fr}}
+.connection-cards{grid-template-columns:repeat(3,1fr)}
+@media(max-width:960px){.connection-cards{grid-template-columns:1fr}}
+.connection-cards .code-wrapper{max-width:100%}
+.connection-cards .code-block{font-size:.78rem;padding:10px 12px;white-space:pre-wrap;word-break:break-all}
 .feature-card{position:relative;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease;overflow:hidden}
 .feature-card::before{content:'';position:absolute;inset:0;border-radius:var(--radius);background:linear-gradient(135deg,rgba(233,69,96,.06),transparent 60%);opacity:0;transition:opacity .25s}
 .feature-card:hover{transform:translateY(-4px);border-color:var(--border-hover);box-shadow:var(--glow)}
@@ -512,7 +516,7 @@ cftunnel GitHub
 <h2>连接配置</h2>
 <p>App 登录页需要填写服务器地址和 Token，这里教你怎么获取</p>
 </div>
-<div class="features fade-in" style="grid-template-columns:repeat(3,1fr)">
+<div class="features fade-in connection-cards">
 
 <div class="feature-card">
 <div class="icon"><svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
