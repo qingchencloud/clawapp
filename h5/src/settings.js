@@ -94,6 +94,25 @@ export function showSettings() {
           ${t('settings.disconnect')}
         </button>
       </div>
+
+      <div class="settings-about">
+        <div class="settings-about-header">
+          <span class="settings-about-logo">🐾</span>
+          <div>
+            <div class="settings-about-name">ClawApp</div>
+            <div class="settings-about-ver">${t('about.version')} 1.2.0</div>
+          </div>
+        </div>
+        <div class="settings-about-links">
+          <a href="https://clawapp.qt.cool" target="_blank" rel="noopener">${t('about.homepage')}</a>
+          <a href="https://github.com/qingchencloud/clawapp" target="_blank" rel="noopener">${t('about.github')}</a>
+          <a href="https://cftunnel.qt.cool" target="_blank" rel="noopener">${t('about.cftunnel')}</a>
+          <a href="https://github.com/qingchencloud/clawapp/releases" target="_blank" rel="noopener">${t('about.community')}</a>
+        </div>
+        <div class="settings-about-footer">
+          MIT ${t('about.license')} · ${t('about.copyright')}
+        </div>
+      </div>
     </div>
   `
 

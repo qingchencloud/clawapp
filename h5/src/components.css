@@ -491,6 +491,68 @@
   color: #fff;
 }
 
+/* 关于区块 */
+.settings-about {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.settings-about-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.settings-about-logo {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.settings-about-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.settings-about-ver {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.settings-about-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.settings-about-links a {
+  display: inline-block;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--accent);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.settings-about-links a:active {
+  opacity: 0.7;
+  transform: scale(0.96);
+}
+
+.settings-about-footer {
+  font-size: 11px;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  text-align: center;
+}
+
 /* 新用户引导 */
 .guide-overlay {
   position: fixed;
