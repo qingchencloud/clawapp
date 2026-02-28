@@ -444,11 +444,18 @@ npm run dev:server
 
 <h2 id="faq">常见问题</h2>
 
-**Q: 一直显示「连接中」？**
+**Q: 一直显示「连接中」或报 502 Bad Gateway 错误？**
 
 1. 检查 OpenClaw Gateway 是否在运行：`curl http://localhost:18789`
-2. 确认 `OPENCLAW_GATEWAY_TOKEN` 正确
-3. Docker 部署时，Gateway 地址应为 `ws://host.docker.internal:18789`
+2. 后台日志如果提示 `Gateway 握手失败: NOT_PAIRED` 或 `pairing required`，是因为根据 OpenClaw 的安全机制，首次连接需要作为设备进行配对审批。**请在运行 Gateway 的服务端执行以下命令批准配对：**
+   ```bash
+   # 查看待配对设备列表并获取 requestId
+   openclaw gateway call device.pair.list --json
+   # 使用 requestId 批准配对
+   openclaw gateway call device.pair.approve --params '{"requestId":"<你的id>"}' --json
+   ```
+3. 确认 `OPENCLAW_GATEWAY_TOKEN` 正确
+4. Docker 部署时，Gateway 地址应为 `ws://host.docker.internal:18789`
 
 **Q: 手机打不开页面？**
 

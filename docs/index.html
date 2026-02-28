@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -28,695 +28,874 @@
 <meta name="twitter:description" content="Chat with your OpenClaw AI agent from your phone. SSE streaming, voice input, multi-agent, offline cache.">
 <meta name="twitter:image" content="https://clawapp.qt.cool/image/chat-response.png">
 <meta name="twitter:image:alt" content="ClawApp mobile chat interface">
-<meta name="theme-color" content="#0d0d1a">
+<meta name="theme-color" content="#09090b">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ClawApp">
 <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  "name": "ClawApp",
-  "alternateName": "OpenClaw Mobile",
-  "description": "Mobile H5 chat client for OpenClaw AI Agent platform with SSE streaming, voice input, multi-agent support.",
-  "url": "https://clawapp.qt.cool",
-  "applicationCategory": "CommunicationApplication",
-  "operatingSystem": "Web, Android, iOS",
-  "softwareVersion": "1.2.0",
-  "license": "https://opensource.org/licenses/MIT",
-  "isAccessibleForFree": true,
-  "screenshot": "https://clawapp.qt.cool/image/chat-response.png",
-  "featureList": "SSE streaming chat, Image upload, Voice input, Multi-agent support, Offline cache, Ed25519 device auth, Quick commands, Session management, Dark mode, PWA, i18n, Auto-reconnect, XSS protection",
-  "downloadUrl": "https://github.com/qingchencloud/clawapp/releases",
-  "installUrl": "https://github.com/qingchencloud/clawapp#quickstart",
-  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CNY" },
-  "author": { "@type": "Organization", "name": "武汉晴辰天下网络科技有限公司", "url": "https://qingchencloud.com" },
-  "sourceOrganization": { "@type": "Organization", "name": "QingchenCloud", "url": "https://qingchencloud.com" }
+  "@context":"https://schema.org","@type":"SoftwareApplication","name":"ClawApp","alternateName":"OpenClaw Mobile",
+  "description":"Mobile H5 chat client for OpenClaw AI Agent platform with SSE streaming, voice input, multi-agent support.",
+  "url":"https://clawapp.qt.cool","applicationCategory":"CommunicationApplication","operatingSystem":"Web, Android, iOS",
+  "softwareVersion":"1.2.0","license":"https://opensource.org/licenses/MIT","isAccessibleForFree":true,
+  "screenshot":"https://clawapp.qt.cool/image/chat-response.png",
+  "featureList":"SSE streaming chat, Image upload, Voice input, Multi-agent support, Offline cache, Ed25519 device auth, Quick commands, Session management, Dark mode, PWA, i18n, Auto-reconnect, XSS protection",
+  "downloadUrl":"https://github.com/qingchencloud/clawapp/releases",
+  "installUrl":"https://github.com/qingchencloud/clawapp#quickstart",
+  "offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"},
+  "author":{"@type":"Organization","name":"武汉晴辰天下网络科技有限公司","url":"https://qingchencloud.com"},
+  "sourceOrganization":{"@type":"Organization","name":"QingchenCloud","url":"https://qingchencloud.com"}
 }</script>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0d0d1a;--bg2:#111128;--bg3:#1a1a2e;
-  --card:rgba(26,26,50,.6);--card-hover:rgba(35,35,65,.7);
-  --accent:#e94560;--accent2:#0f3460;--accent3:#7b2ff7;
-  --text:#eaeaf4;--text2:#9898b8;--text3:#5e5e7e;
-  --border:rgba(255,255,255,.08);--border-hover:rgba(233,69,96,.4);
-  --radius:16px;--radius-sm:10px;
-  --glow:0 0 40px rgba(233,69,96,.15);
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Lucide Icons CDN -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+tailwind.config={
+  darkMode:'class',
+  theme:{
+    extend:{
+      colors:{
+        brand:{DEFAULT:'#e94560',light:'#ff6b81',dark:'#c73a52'},
+        accent:{DEFAULT:'#7b2ff7',light:'#a855f7'},
+        surface:{DEFAULT:'#0a0a12',1:'#111119',2:'#18182a',3:'#1e1e35'},
+        txt:{DEFAULT:'#eaeaf4',2:'#9898b8',3:'#5e5e7e'}
+      },
+      fontFamily:{sans:['Inter','system-ui','-apple-system','sans-serif'],mono:['"JetBrains Mono"','"SF Mono"','Menlo','monospace']},
+    }
+  }
 }
-html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
-body{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.65;overflow-x:hidden;-webkit-font-smoothing:antialiased}
-a{color:var(--accent);text-decoration:none;transition:opacity .15s}
-a:hover{opacity:.85}
+</script>
+<style>
+/* ===== 无闪烁主题初始化 ===== */
+html{scroll-behavior:smooth}
+html:not(.dark) body{--bg:#fafafa;--surface1:#fff;--surface2:#f4f4f5;--txt:#18181b;--txt2:#52525b;--txt3:#a1a1aa;--border:rgba(0,0,0,.08)}
+html.dark body{--bg:#0a0a12;--surface1:#111119;--surface2:#18182a;--txt:#eaeaf4;--txt2:#9898b8;--txt3:#5e5e7e;--border:rgba(255,255,255,.06)}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 ::selection{background:rgba(233,69,96,.3);color:#fff}
 
-/* 极光背景 */
-.aurora{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
-.aurora span{position:absolute;border-radius:50%;filter:blur(140px);opacity:.12;animation:drift 25s ease-in-out infinite alternate}
-.aurora span:nth-child(1){width:700px;height:700px;background:var(--accent);top:-250px;left:-150px}
-.aurora span:nth-child(2){width:600px;height:600px;background:var(--accent2);bottom:-250px;right:-150px;animation-delay:-12s}
-.aurora span:nth-child(3){width:500px;height:500px;background:var(--accent3);top:40%;left:50%;animation-delay:-6s;opacity:.08}
-@keyframes drift{0%{transform:translate(0,0) scale(1)}33%{transform:translate(80px,50px) scale(1.15)}66%{transform:translate(-40px,100px) scale(.9)}100%{transform:translate(60px,-30px) scale(1.05)}}
+/* ===== 自定义滚动条 ===== */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(233,69,96,.3);border-radius:5px;transition:background .2s}
+::-webkit-scrollbar-thumb:hover{background:rgba(233,69,96,.5)}
+html:not(.dark) ::-webkit-scrollbar-thumb{background:rgba(0,0,0,.15)}
+html:not(.dark) ::-webkit-scrollbar-thumb:hover{background:rgba(0,0,0,.25)}
+*{scrollbar-width:thin;scrollbar-color:rgba(233,69,96,.3) transparent}
+html:not(.dark) *{scrollbar-color:rgba(0,0,0,.15) transparent}
 
-/* 布局 */
-.container{max-width:1140px;margin:0 auto;padding:0 24px}
-section{padding:100px 0}
-@media(max-width:768px){section{padding:64px 0}}
+/* ===== 光刻机网格底纹 ===== */
+.grid-bg{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+  background-size:64px 64px;
+  -webkit-mask-image:linear-gradient(180deg,transparent,rgba(0,0,0,.6) 30%,rgba(0,0,0,.6) 70%,transparent);
+  mask-image:linear-gradient(180deg,transparent,rgba(0,0,0,.6) 30%,rgba(0,0,0,.6) 70%,transparent);
+}
+html:not(.dark) .grid-bg{background-image:linear-gradient(rgba(0,0,0,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,0,.03) 1px,transparent 1px)}
 
-/* 滚动动画 */
-.fade-in{opacity:0;transform:translateY(30px);transition:opacity .6s ease,transform .6s ease}
-.fade-in.visible{opacity:1;transform:translateY(0)}
-.fade-in-delay-1{transition-delay:.1s}
-.fade-in-delay-2{transition-delay:.2s}
-.fade-in-delay-3{transition-delay:.3s}
-.fade-in-delay-4{transition-delay:.4s}
+/* ===== 能量球 ===== */
+.orb{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0}
+.orb-1{width:600px;height:600px;background:rgba(233,69,96,.1);top:-200px;left:-100px;animation:orbDrift 20s ease-in-out infinite alternate}
+.orb-2{width:500px;height:500px;background:rgba(123,47,247,.08);bottom:-200px;right:-100px;animation:orbDrift 25s ease-in-out infinite alternate-reverse}
+.orb-3{width:400px;height:400px;background:rgba(15,52,96,.1);top:50%;left:50%;transform:translate(-50%,-50%);animation:orbDrift 30s ease-in-out infinite alternate}
+html:not(.dark) .orb{opacity:.4}
+@keyframes orbDrift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(60px,40px) scale(1.15)}100%{transform:translate(-30px,-20px) scale(.95)}}
 
-/* 顶部导航 */
-.topnav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(13,13,26,.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;transition:box-shadow .3s}
-.topnav.scrolled{box-shadow:0 4px 30px rgba(0,0,0,.3)}
-.topnav-brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.05rem;color:var(--text)}
-.topnav-brand svg{width:28px;height:28px}
-.topnav-links{display:flex;align-items:center;gap:18px;font-size:.88rem}
-.topnav-links a{color:var(--text2);transition:color .2s}
-.topnav-links a:hover{color:var(--accent);opacity:1}
-@media(max-width:640px){.topnav-links .hide-mobile{display:none}.topnav-links{gap:12px;font-size:.82rem}}
+/* ===== 漂浮粒子 ===== */
+.particle{position:fixed;width:4px;height:4px;background:rgba(233,69,96,.6);border-radius:50%;pointer-events:none;z-index:1;animation:particleFloat 15s ease-in-out infinite}
+.particle::before{content:'';position:absolute;inset:-2px;background:radial-gradient(circle,rgba(233,69,96,.4),transparent);border-radius:50%}
+@keyframes particleFloat{0%,100%{transform:translateY(0) translateX(0);opacity:.3}25%{transform:translateY(-30px) translateX(15px);opacity:.6}50%{transform:translateY(-60px) translateX(-10px);opacity:.8}75%{transform:translateY(-30px) translateX(-20px);opacity:.6}}
+html:not(.dark) .particle{background:rgba(233,69,96,.4)}
 
-/* 按钮 */
-.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 30px;border-radius:var(--radius);font-size:15px;font-weight:600;transition:all .2s ease;cursor:pointer;border:none}
-.btn:active{transform:scale(.97)}
-.btn-primary{background:linear-gradient(135deg,var(--accent),#c73a52);color:#fff;box-shadow:0 4px 24px rgba(233,69,96,.3)}
-.btn-primary:hover{box-shadow:0 8px 36px rgba(233,69,96,.45);transform:translateY(-1px);opacity:1}
-.btn-outline{border:1.5px solid var(--border);color:var(--text);background:rgba(26,26,50,.5);backdrop-filter:blur(10px)}
-.btn-outline:hover{border-color:var(--accent);color:var(--accent);opacity:1}
+/* ===== 鼠标光晕 ===== */
+.cursor-glow{position:fixed;width:400px;height:400px;background:radial-gradient(circle,rgba(233,69,96,.08),transparent 70%);border-radius:50%;pointer-events:none;z-index:1;transform:translate(-50%,-50%);transition:opacity .3s;opacity:0}
+html:not(.dark) .cursor-glow{background:radial-gradient(circle,rgba(233,69,96,.04),transparent 70%)}
 
-/* Hero */
-.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:80px 24px 60px;position:relative}
-.hero-inner{max-width:680px}
-.hero-logo{width:88px;height:88px;margin:0 auto 24px;filter:drop-shadow(0 0 40px rgba(233,69,96,.3));animation:float 6s ease-in-out infinite}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.hero h1{font-size:clamp(2.8rem,7vw,4rem);font-weight:800;letter-spacing:-1.5px;background:linear-gradient(135deg,#fff 0%,var(--accent) 50%,#ff8fa3 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.15;margin-bottom:8px}
-.hero .tagline{font-size:clamp(1rem,2.5vw,1.2rem);color:var(--text2);margin:16px auto 36px;max-width:520px;line-height:1.7}
-.hero .tagline .highlight{color:var(--text);font-weight:500}
-.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
-.scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);animation:bounce 2s ease-in-out infinite;color:var(--text3)}
-@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+/* ===== Hero 装饰几何 ===== */
+.deco-shape{position:absolute;border:2px solid rgba(233,69,96,.15);border-radius:20%;pointer-events:none;animation:shapeRotate 20s linear infinite}
+.deco-shape.s1{width:120px;height:120px;top:15%;right:10%;animation-duration:25s}
+.deco-shape.s2{width:80px;height:80px;bottom:20%;left:8%;animation-duration:30s;animation-direction:reverse}
+.deco-shape.s3{width:60px;height:60px;top:40%;left:15%;animation-duration:20s;border-radius:50%}
+@keyframes shapeRotate{0%{transform:rotate(0deg) scale(1)}50%{transform:rotate(180deg) scale(1.1)}100%{transform:rotate(360deg) scale(1)}}
+html:not(.dark) .deco-shape{border-color:rgba(233,69,96,.08)}
 
-/* 技术徽章栏 */
-.tech-badges{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;padding:0 24px;margin-top:-40px;margin-bottom:40px}
-.tech-badge{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:100px;background:rgba(26,26,50,.6);border:1px solid var(--border);font-size:.82rem;color:var(--text2);backdrop-filter:blur(8px);white-space:nowrap}
-.tech-badge svg{width:14px;height:14px;stroke:var(--accent);fill:none;stroke-width:2;flex-shrink:0}
+/* ===== 滚动揭示 ===== */
+.reveal{opacity:0;transform:translateY(40px) scale(.97);transition:opacity .7s cubic-bezier(.16,1,.3,1),transform .7s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0) scale(1)}
 
-/* Section 标题 */
-.section-title{text-align:center;margin-bottom:56px}
-.section-title h2{font-size:clamp(1.7rem,4vw,2.4rem);font-weight:700;background:linear-gradient(135deg,var(--text),var(--text2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.section-title p{color:var(--text2);margin-top:10px;font-size:1.05rem}
+/* ===== 流光渐变字 ===== */
+.gradient-text{
+  background:linear-gradient(135deg,#e94560,#ff6b81,#7b2ff7,#a855f7,#e94560);
+  background-size:200% 200%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:gradientShift 4s ease-in-out infinite;
+}
+@keyframes gradientShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 
-/* 功能卡片 */
-.features{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-@media(max-width:960px){.features{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:580px){.features{grid-template-columns:1fr}}
-.connection-cards{grid-template-columns:repeat(3,1fr)}
-@media(max-width:960px){.connection-cards{grid-template-columns:1fr}}
-.connection-cards .code-wrapper{max-width:100%}
-.connection-cards .code-block{font-size:.78rem;padding:10px 12px;white-space:pre-wrap;word-break:break-all}
-.feature-card{position:relative;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease;overflow:hidden}
-.feature-card::before{content:'';position:absolute;inset:0;border-radius:var(--radius);background:linear-gradient(135deg,rgba(233,69,96,.06),transparent 60%);opacity:0;transition:opacity .25s}
-.feature-card:hover{transform:translateY(-4px);border-color:var(--border-hover);box-shadow:var(--glow)}
-.feature-card:hover::before{opacity:1}
-.feature-card .icon{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;margin-bottom:16px;box-shadow:0 4px 16px rgba(233,69,96,.2)}
-.feature-card .icon svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.feature-card h3{font-size:1.05rem;margin-bottom:8px;color:var(--text)}
-.feature-card p{color:var(--text2);font-size:.9rem;line-height:1.6}
+/* ===== 磁性探照灯卡片 ===== */
+.spotlight-card{
+  --mouse-x:50%;--mouse-y:50%;
+  position:relative;overflow:hidden;
+  border:1px solid var(--border);
+  transition:transform .3s cubic-bezier(.16,1,.3,1),border-color .3s,box-shadow .3s;
+}
+.spotlight-card::before{
+  content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),rgba(233,69,96,.06),transparent 40%);
+  opacity:0;transition:opacity .3s;
+}
+.spotlight-card::after{
+  content:'';position:absolute;inset:-1px;z-index:0;pointer-events:none;border-radius:inherit;
+  background:radial-gradient(400px circle at var(--mouse-x) var(--mouse-y),rgba(233,69,96,.25),transparent 40%);
+  opacity:0;transition:opacity .3s;
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;padding:1px;
+}
+.spotlight-card:hover::before,.spotlight-card:hover::after{opacity:1}
+.spotlight-card:hover{transform:translateY(-4px);border-color:rgba(233,69,96,.3);box-shadow:0 20px 60px -12px rgba(233,69,96,.12)}
 
-/* 截图展示 */
-.screenshots{display:flex;gap:24px;padding:0 24px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;justify-content:center;flex-wrap:nowrap}
-.screenshots::-webkit-scrollbar{display:none}
-.screenshots .phone{position:relative;flex-shrink:0;width:195px;border-radius:28px;border:2.5px solid rgba(255,255,255,.12);background:linear-gradient(180deg,#1a1a30,#111125);padding:10px;box-shadow:0 12px 40px rgba(0,0,0,.4);transition:transform .35s ease,box-shadow .35s ease;scroll-snap-align:center;perspective:800px}
-.screenshots .phone:hover{transform:translateY(-8px) rotateY(-3deg);box-shadow:0 20px 60px rgba(0,0,0,.5)}
-.screenshots .phone img{width:100%;border-radius:18px;display:block}
-.screenshots .phone .island{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:48px;height:16px;background:#000;border-radius:10px;z-index:2;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
-.screenshots .phone .island::after{content:'';position:absolute;right:4px;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:radial-gradient(circle,#1a3a5c,#0a1a2e);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.15)}
-@media(max-width:768px){.screenshots{justify-content:flex-start;padding:0 16px}.screenshots .phone{width:160px;border-radius:22px;padding:7px}.screenshots .phone img{border-radius:14px}.screenshots .phone .island{width:36px;height:12px;top:10px}}
+/* ===== conic 流光旋转边框按钮 ===== */
+.conic-btn{position:relative;z-index:1;border:none;overflow:hidden;isolation:isolate;color:#fff}
+.conic-btn::before{
+  content:'';position:absolute;inset:-2px;z-index:-2;border-radius:inherit;
+  background:conic-gradient(from var(--conic-angle,0deg),#e94560,#7b2ff7,#0f3460,#e94560);
+  animation:conicSpin 3s linear infinite;
+}
+.conic-btn::after{content:'';position:absolute;inset:2px;z-index:-1;border-radius:inherit;background:var(--bg)}
+html:not(.dark) .conic-btn{color:#18181b}
+html:not(.dark) .conic-btn::after{background:#fff}
+@keyframes conicSpin{to{--conic-angle:360deg}}
+@property --conic-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
 
-/* 架构图 */
-.arch{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;padding:48px 0}
-.arch-node{position:relative;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px 32px;text-align:center;backdrop-filter:blur(12px);min-width:180px;transition:border-color .3s,box-shadow .3s}
-.arch-node:hover{border-color:var(--border-hover);box-shadow:var(--glow)}
-.arch-node .arch-icon{width:40px;height:40px;margin:0 auto 10px;border-radius:10px;background:linear-gradient(135deg,var(--accent2),var(--accent3));display:flex;align-items:center;justify-content:center}
-.arch-node .arch-icon svg{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:2}
-.arch-node strong{display:block;font-size:1rem;margin-bottom:4px}
-.arch-node span{color:var(--text3);font-size:.82rem}
-.arch-arrow{padding:0 16px;flex-shrink:0;display:flex;align-items:center}
-.arch-arrow svg{width:48px;height:24px}
-.arch-arrow .flow-line{stroke:var(--accent);stroke-width:2;stroke-dasharray:6 4;animation:flow 1.5s linear infinite}
-@keyframes flow{to{stroke-dashoffset:-20}}
-.arch-arrow .arrow-head{fill:var(--accent)}
-@media(max-width:640px){.arch{flex-direction:column;gap:0}.arch-arrow{transform:rotate(90deg);padding:8px 0}}
+/* ===== 跑马灯 ===== */
+.marquee-track{display:flex;width:max-content;animation:marqueeScroll 30s linear infinite}
+.marquee-track:hover{animation-play-state:paused}
+@keyframes marqueeScroll{to{transform:translateX(-50%)}}
 
-/* 对比表 */
-.compare-table{width:100%;border-collapse:collapse;border-radius:var(--radius);overflow:hidden;background:var(--card);border:1px solid var(--border)}
-.compare-table th,.compare-table td{padding:14px 20px;text-align:left;font-size:.9rem;border-bottom:1px solid var(--border)}
-.compare-table th{background:rgba(233,69,96,.08);color:var(--text);font-weight:600;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px}
-.compare-table td{color:var(--text2)}
-.compare-table tr:last-child td{border-bottom:none}
-.compare-table .check{color:#4ade80;font-weight:700}
-.compare-table .cross{color:var(--text3)}
-@media(max-width:640px){.compare-table th,.compare-table td{padding:10px 12px;font-size:.82rem}}
+/* ===== 手机模型 ===== */
+.phone-mock{
+  position:relative;border-radius:28px;border:2.5px solid rgba(255,255,255,.1);
+  background:linear-gradient(180deg,#1a1a30,#111125);padding:10px;
+  box-shadow:0 16px 48px rgba(0,0,0,.4);transition:transform .5s cubic-bezier(.16,1,.3,1),box-shadow .5s;
+}
+.phone-mock:hover{transform:translateY(-8px) rotateY(-3deg);box-shadow:0 24px 64px rgba(0,0,0,.5)}
+.phone-mock img{width:100%;border-radius:18px;display:block}
+.phone-mock .island{position:absolute;top:14px;left:50%;transform:translateX(-50%);width:48px;height:16px;background:#000;border-radius:10px;z-index:2;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.phone-mock .island::after{content:'';position:absolute;right:4px;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;background:radial-gradient(circle,#1a3a5c,#0a1a2e);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.15)}
 
-/* 代码块 */
-.code-wrapper{max-width:660px;margin:0 auto;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)}
-.code-tabs{display:flex;gap:0;background:rgba(17,17,40,.9);border-bottom:1px solid var(--border)}
-.code-tab{padding:11px 22px;background:transparent;border:none;color:var(--text3);font-size:.88rem;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;transition:color .2s,border-color .2s}
-.code-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.code-tab:hover{color:var(--text2)}
-.code-block{background:var(--bg2);padding:20px 24px;overflow-x:auto;font-family:'SF Mono',Menlo,'Cascadia Code',monospace;font-size:.84rem;line-height:1.75;color:var(--text2);display:none;white-space:pre;position:relative}
-.code-block.active{display:block}
-.copy-btn{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.08);border:1px solid var(--border);color:var(--text3);padding:5px 12px;border-radius:6px;font-size:.75rem;cursor:pointer;transition:all .2s;font-family:inherit}
-.copy-btn:hover{background:rgba(255,255,255,.14);color:var(--text)}
-.copy-btn.copied{color:#4ade80;border-color:rgba(74,222,128,.3)}
+/* ===== 浮动动画 ===== */
+.float-slow{animation:floatSlow 6s ease-in-out infinite}
+@keyframes floatSlow{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
 
-/* Footer */
-footer{border-top:1px solid var(--border);padding:48px 24px 32px;text-align:center;color:var(--text3);font-size:.85rem}
-footer a{color:var(--text2);transition:color .2s}
-footer a:hover{color:var(--accent)}
-footer .links{display:flex;gap:24px;justify-content:center;margin-bottom:14px;flex-wrap:wrap}
-footer .icp{margin-top:10px;font-size:.78rem}
-footer .copyright{margin-top:6px}
+/* ===== 代码块 ===== */
+.code-box{background:rgba(17,17,25,.9);border:1px solid var(--border);border-radius:12px;overflow:hidden;backdrop-filter:blur(12px)}
+.code-box pre{padding:16px 20px;overflow-x:auto;font-family:'JetBrains Mono','SF Mono',Menlo,monospace;font-size:.82rem;line-height:1.75;color:var(--txt2);white-space:pre}
+.code-tab-btn{padding:10px 20px;background:transparent;border:none;color:var(--txt3);font-size:.85rem;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;transition:color .2s,border-color .2s}
+.code-tab-btn.active{color:#e94560;border-bottom-color:#e94560}
+
+/* ===== 架构流线 ===== */
+.flow-dash{stroke-dasharray:6 4;animation:flowDash 1.5s linear infinite}
+@keyframes flowDash{to{stroke-dashoffset:-20}}
+
+/* ===== 汉堡菜单 ===== */
+.mobile-menu{
+  position:fixed;inset:0;z-index:90;
+  background:rgba(10,10,18,.92);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+html:not(.dark) .mobile-menu{background:rgba(250,250,250,.95)}
+.mobile-menu.open{opacity:1;pointer-events:auto}
+.mobile-menu a{font-size:1.3rem;color:var(--txt);font-weight:600;transition:color .2s}
+.mobile-menu a:hover{color:#e94560}
+
+/* ===== 对比表 ===== */
+.compare-tbl{width:100%;border-collapse:collapse;border-radius:16px;overflow:hidden;background:var(--surface1);border:1px solid var(--border)}
+.compare-tbl th,.compare-tbl td{padding:14px 20px;text-align:left;font-size:.88rem;border-bottom:1px solid var(--border)}
+.compare-tbl th{background:rgba(233,69,96,.06);color:var(--txt);font-weight:600;font-size:.82rem;text-transform:uppercase;letter-spacing:.5px}
+.compare-tbl .yes{color:#4ade80;font-weight:700}
+.compare-tbl .no{color:var(--txt3)}
+
+/* ===== Light 模式覆盖 ===== */
+#topnav{background:rgba(10,10,18,.7)}
+html:not(.dark) #topnav{background:rgba(255,255,255,.85)}
+html:not(.dark) .spotlight-card{border-color:rgba(0,0,0,.08)}
+html:not(.dark) .spotlight-card::before{background:radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),rgba(233,69,96,.04),transparent 40%)}
+html:not(.dark) .spotlight-card::after{background:radial-gradient(400px circle at var(--mouse-x) var(--mouse-y),rgba(233,69,96,.15),transparent 40%)}
+html:not(.dark) .spotlight-card:hover{box-shadow:0 20px 60px -12px rgba(0,0,0,.08)}
+html:not(.dark) .code-box{background:rgba(244,244,245,.9)}
+html:not(.dark) .code-box pre{color:#52525b}
+html:not(.dark) .phone-mock{background:linear-gradient(180deg,#e4e4e7,#d4d4d8);border-color:rgba(0,0,0,.1)}
+html:not(.dark) .compare-tbl{background:#fff}
+html:not(.dark) .conic-btn::after{background:#fafafa}
 </style>
 </head>
 <body>
-<div class="aurora"><span></span><span></span><span></span></div>
+<!-- 底层视觉层 -->
+<div class="grid-bg"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
 
-<!-- 顶部导航 -->
-<nav class="topnav" id="topnav">
-<a href="#" class="topnav-brand">
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none"><rect width="64" height="64" rx="14" fill="#0d0d1a"/><path d="M32 12C20.954 12 12 20.954 12 32s8.954 20 20 20c2.5 0 4.9-.46 7.1-1.3L48 54l-1.3-8.9A19.9 19.9 0 0052 32c0-11.046-8.954-20-20-20z" stroke="#e94560" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="24" cy="32" r="3" fill="#e94560"/><circle cx="32" cy="32" r="3" fill="#e94560"/><circle cx="40" cy="32" r="3" fill="#e94560"/></svg>
-ClawApp
-</a>
-<div class="topnav-links">
-<a href="#features" class="hide-mobile">功能</a>
-<a href="#quickstart" class="hide-mobile">部署</a>
-<a href="#connection" class="hide-mobile">连接配置</a>
-<a href="#download" class="hide-mobile">下载</a>
-<a href="#community">社区</a>
-<a href="https://discord.gg/U9AttmsNHh" target="_blank" rel="noopener">Discord</a>
-<a href="https://github.com/qingchencloud/clawapp" target="_blank" rel="noopener">
-<svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" style="vertical-align:-3px"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-</a>
-</div>
+<!-- 鼠标光晕 -->
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<!-- 漂浮粒子 -->
+<div class="particle" style="top:10%;left:15%;animation-delay:0s"></div>
+<div class="particle" style="top:25%;left:75%;animation-delay:2s"></div>
+<div class="particle" style="top:45%;left:20%;animation-delay:4s"></div>
+<div class="particle" style="top:60%;left:80%;animation-delay:1s"></div>
+<div class="particle" style="top:75%;left:30%;animation-delay:3s"></div>
+<div class="particle" style="top:85%;left:65%;animation-delay:5s"></div>
+<div class="particle" style="top:35%;left:90%;animation-delay:2.5s"></div>
+<div class="particle" style="top:55%;left:10%;animation-delay:4.5s"></div>
+
+<!-- ===== 顶部导航 ===== -->
+<nav id="topnav" class="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-6 border-b transition-all duration-300" style="backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-color:var(--border)">
+  <a href="#" class="flex items-center gap-2.5 font-bold text-lg" style="color:var(--txt)">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" class="w-8 h-8"><rect width="64" height="64" rx="14" fill="#0d0d1a"/><path d="M32 12C20.954 12 12 20.954 12 32s8.954 20 20 20c2.5 0 4.9-.46 7.1-1.3L48 54l-1.3-8.9A19.9 19.9 0 0052 32c0-11.046-8.954-20-20-20z" stroke="#e94560" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="24" cy="32" r="3" fill="#e94560"/><circle cx="32" cy="32" r="3" fill="#e94560"/><circle cx="40" cy="32" r="3" fill="#e94560"/></svg>
+    ClawApp
+  </a>
+  <!-- 桌面端链接 -->
+  <div class="hidden md:flex items-center gap-5 text-sm" style="color:var(--txt2)">
+    <a href="#features" class="hover:text-[#e94560] transition-colors">功能</a>
+    <a href="#quickstart" class="hover:text-[#e94560] transition-colors">部署</a>
+    <a href="#connection" class="hover:text-[#e94560] transition-colors">连接</a>
+    <a href="#download" class="hover:text-[#e94560] transition-colors">下载</a>
+    <a href="#community" class="hover:text-[#e94560] transition-colors">社区</a>
+    <a href="https://github.com/qingchencloud/clawapp" target="_blank" rel="noopener" class="hover:text-[#e94560] transition-colors">
+      <i data-lucide="github" class="w-[18px] h-[18px]"></i>
+    </a>
+    <!-- 主题切换 -->
+    <button id="themeToggle" class="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-white/10" style="border:1px solid var(--border)" aria-label="切换主题">
+      <i id="iconSun" data-lucide="sun" class="w-4 h-4 hidden"></i>
+      <i id="iconMoon" data-lucide="moon" class="w-4 h-4"></i>
+    </button>
+  </div>
+  <!-- 汉堡按钮 -->
+  <button id="burgerBtn" class="md:hidden w-9 h-9 flex items-center justify-center" aria-label="菜单">
+    <i data-lucide="menu" class="w-5 h-5"></i>
+  </button>
 </nav>
 
-<main>
-<!-- Hero -->
-<section class="hero" role="banner">
-<div class="hero-inner">
-<svg class="hero-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-<defs><linearGradient id="g" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#e94560"/><stop offset="100%" stop-color="#7b2ff7"/></linearGradient></defs>
-<rect width="64" height="64" rx="14" fill="#0d0d1a"/>
-<path d="M32 12C20.954 12 12 20.954 12 32s8.954 20 20 20c2.5 0 4.9-.46 7.1-1.3L48 54l-1.3-8.9A19.9 19.9 0 0052 32c0-11.046-8.954-20-20-20z" stroke="url(#g)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-<circle cx="24" cy="32" r="3" fill="#e94560"/><circle cx="32" cy="32" r="3" fill="#e94560"/><circle cx="40" cy="32" r="3" fill="#e94560"/>
-</svg>
-<h1>ClawApp</h1>
-<p class="tagline">用手机浏览器和你的 <span class="highlight">OpenClaw AI 智能体</span>聊天<br>流式对话 · 语音输入 · 多智能体 · 离线缓存 · 设备认证</p>
-<div class="hero-btns">
-<a href="https://github.com/qingchencloud/clawapp" class="btn btn-primary" target="_blank" rel="noopener">
-<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-GitHub
-</a>
-<a href="#quickstart" class="btn btn-outline">快速部署</a>
-<a href="#download" class="btn btn-outline">下载使用</a>
+<!-- 移动端菜单 -->
+<div id="mobileMenu" class="mobile-menu">
+  <button id="closeMenu" class="absolute top-5 right-6 w-9 h-9 flex items-center justify-center" aria-label="关闭">
+    <i data-lucide="x" class="w-6 h-6"></i>
+  </button>
+  <a href="#features" class="menu-link">功能</a>
+  <a href="#quickstart" class="menu-link">部署</a>
+  <a href="#connection" class="menu-link">连接</a>
+  <a href="#download" class="menu-link">下载</a>
+  <a href="#community" class="menu-link">社区</a>
+  <a href="https://github.com/qingchencloud/clawapp" target="_blank" rel="noopener" class="menu-link">GitHub</a>
+  <button id="themeToggleMobile" class="mt-4 px-6 py-2 rounded-full text-sm font-medium" style="border:1px solid var(--border);color:var(--txt2)">切换主题</button>
 </div>
-</div>
-<div class="scroll-hint">
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-</div>
+
+<main class="relative z-10">
+
+<!-- ===== Hero 首屏 ===== -->
+<section class="min-h-screen flex items-center justify-center text-center px-6 pt-20 pb-16 relative">
+  <!-- 装饰几何图形 -->
+  <div class="deco-shape s1"></div>
+  <div class="deco-shape s2"></div>
+  <div class="deco-shape s3"></div>
+
+  <div class="max-w-3xl mx-auto">
+    <!-- Logo 浮动 -->
+    <div class="float-slow mb-8 inline-block">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" class="w-24 h-24 mx-auto" style="filter:drop-shadow(0 0 40px rgba(233,69,96,.35))">
+        <defs><linearGradient id="hg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#e94560"/><stop offset="100%" stop-color="#7b2ff7"/></linearGradient></defs>
+        <rect width="64" height="64" rx="14" fill="#0d0d1a"/>
+        <path d="M32 12C20.954 12 12 20.954 12 32s8.954 20 20 20c2.5 0 4.9-.46 7.1-1.3L48 54l-1.3-8.9A19.9 19.9 0 0052 32c0-11.046-8.954-20-20-20z" stroke="url(#hg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="24" cy="32" r="3" fill="#e94560"/><circle cx="32" cy="32" r="3" fill="#e94560"/><circle cx="40" cy="32" r="3" fill="#e94560"/>
+      </svg>
+    </div>
+    <!-- 标题 -->
+    <h1 class="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter leading-tight mb-4">
+      <span class="gradient-text">ClawApp</span>
+    </h1>
+    <p class="text-lg sm:text-xl max-w-xl mx-auto mb-10 leading-relaxed" style="color:var(--txt2)">
+      用手机浏览器和你的 <span class="font-semibold" style="color:var(--txt)">OpenClaw AI 智能体</span>聊天<br>
+      流式对话 · 语音输入 · 多智能体 · 离线缓存 · 设备认证
+    </p>
+    <!-- CTA 按钮 -->
+    <div class="flex flex-wrap gap-4 justify-center">
+      <a href="https://github.com/qingchencloud/clawapp" target="_blank" rel="noopener" class="conic-btn inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl font-semibold text-[15px] transition-transform active:scale-95">
+        <i data-lucide="github" class="w-4 h-4"></i>
+        GitHub
+      </a>
+      <a href="#quickstart" class="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl font-semibold text-[15px] transition-all active:scale-95 hover:border-[#e94560] hover:text-[#e94560]" style="border:1.5px solid var(--border);color:var(--txt);background:rgba(26,26,50,.4);backdrop-filter:blur(10px)">快速部署</a>
+      <a href="#download" class="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl font-semibold text-[15px] transition-all active:scale-95 hover:border-[#e94560] hover:text-[#e94560]" style="border:1.5px solid var(--border);color:var(--txt);background:rgba(26,26,50,.4);backdrop-filter:blur(10px)">下载使用</a>
+    </div>
+  </div>
+  <!-- 滚动提示 -->
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce" style="color:var(--txt3)">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+  </div>
 </section>
 
-<!-- 技术徽章栏 -->
-<div class="tech-badges fade-in">
-<span class="tech-badge"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>SSE 实时推送</span>
-<span class="tech-badge"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Ed25519 签名</span>
-<span class="tech-badge"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>IndexedDB 离线</span>
-<span class="tech-badge"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>PWA 支持</span>
-<span class="tech-badge"><svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>零依赖前端</span>
-<span class="tech-badge"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>语音输入</span>
+<!-- ===== 技术徽章跑马灯 ===== -->
+<div class="overflow-hidden py-6 -mt-8 mb-8 relative">
+  <div class="marquee-track">
+    <div class="flex gap-4 px-2">
+      <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt2)"><svg class="w-4 h-4 text-[#e94560] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>SSE 实时推送</span>
+      <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt2)"><svg class="w-4 h-4 text-[#e94560] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Ed25519 签名</span>
+      <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt2)"><svg class="w-4 h-4 text-[#e94560] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>IndexedDB 离线</span>
+      <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt2)"><svg class="w-4 h-4 text-[#e94560] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>PWA 支持</span>
+      <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt2)"><svg class="w-4 h-4 text-[#e94560] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>零依赖前端</span>
+      <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt2)"><svg class="w-4 h-4 text-[#e94560] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>语音输入</span>
+      <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt2)"><svg class="w-4 h-4 text-[#e94560] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>断线续传</span>
+      <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt2)"><svg class="w-4 h-4 text-[#e94560] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2"/></svg>暗色主题</span>
+    </div>
+    <!-- 复制一份实现无缝 -->
+    <div class="flex gap-4 px-2">
+      <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt2)"><svg class="w-4 h-4 text-[#e94560] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>SSE 实时推送</span>
+      <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt2)"><svg class="w-4 h-4 text-[#e94560] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Ed25519 签名</span>
+      <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt2)"><svg class="w-4 h-4 text-[#e94560] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>IndexedDB 离线</span>
+      <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt2)"><svg class="w-4 h-4 text-[#e94560] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>PWA 支持</span>
+      <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt2)"><svg class="w-4 h-4 text-[#e94560] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>零依赖前端</span>
+      <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt2)"><svg class="w-4 h-4 text-[#e94560] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg>语音输入</span>
+      <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt2)"><svg class="w-4 h-4 text-[#e94560] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>断线续传</span>
+      <span class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt2)"><svg class="w-4 h-4 text-[#e94560] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2"/></svg>暗色主题</span>
+    </div>
+  </div>
 </div>
 
-<!-- 功能特性 -->
-<section id="features">
-<div class="container">
-<div class="section-title fade-in">
-<h2>功能特性</h2>
-<p>为移动端精心打造的 AI 聊天体验</p>
-</div>
-<div class="features">
-
-<div class="feature-card fade-in">
-<div class="icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
-<h3>流式聊天</h3>
-<p>实时打字机效果，Markdown 渲染 + 代码高亮，XSS 安全防护</p>
-</div>
-
-<div class="feature-card fade-in">
-<div class="icon"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></div>
-<h3>语音输入</h3>
-<p>语音转文字，长按录音一键发送，HTTPS 环境下自动启用</p>
-</div>
-
-<div class="feature-card fade-in">
-<div class="icon"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
-<h3>图片收发</h3>
-<p>拍照 / 相册选取、压缩上传，AI 可识别图片并在回复中返回图片</p>
-</div>
-
-<div class="feature-card fade-in">
-<div class="icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
-<h3>多智能体</h3>
-<p>新建会话时可选择不同 Agent，每个智能体独立上下文</p>
-</div>
-
-<div class="feature-card fade-in">
-<div class="icon"><svg viewBox="0 0 24 24"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg></div>
-<h3>快捷指令</h3>
-<p>/model 切换模型、/think 控制思考、/new 新建会话，一键触达</p>
-</div>
-
-<div class="feature-card fade-in">
-<div class="icon"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></div>
-<h3>工具调用</h3>
-<p>实时显示 AI 工具调用状态，运行中 / 完成 / 错误一目了然</p>
-</div>
-
-<div class="feature-card fade-in">
-<div class="icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
-<h3>会话管理</h3>
-<p>多会话切换、新建、删除，每个会话独立上下文，互不干扰</p>
-</div>
-
-<div class="feature-card fade-in">
-<div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></div>
-<h3>主题 & 国际化</h3>
-<p>浅色 / 深色 / 跟随系统，中英文双语切换，适配各种场景</p>
-</div>
-
-<div class="feature-card fade-in">
-<div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
-<h3>安全认证</h3>
-<p>Token 双重认证 + Ed25519 设备签名，兼容 OpenClaw 2.13+</p>
-</div>
-
-<div class="feature-card fade-in">
-<div class="icon"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><path d="M12 18h.01"/></svg></div>
-<h3>PWA + 离线缓存</h3>
-<p>添加到主屏幕，IndexedDB 消息持久化，断网可查看历史，恢复后自动同步</p>
-</div>
-
-<div class="feature-card fade-in">
-<div class="icon"><svg viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></div>
-<h3>SSE 智能重连</h3>
-<p>SSE 事件流 + Last-Event-ID 断线续传，锁屏 / 切后台自动恢复</p>
-</div>
-
-<div class="feature-card fade-in">
-<div class="icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div>
-<h3>大屏适配</h3>
-<p>电脑浏览器自动切换宽屏布局，侧边栏会话列表，高效利用屏幕空间</p>
-</div>
-
-</div>
-</div>
+<!-- ===== 数据统计区（数字暴涨动画）===== -->
+<section class="py-16 px-6">
+  <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 reveal">
+    <div class="text-center p-6 rounded-2xl" style="background:var(--surface2);border:1px solid var(--border)">
+      <div class="text-3xl sm:text-4xl font-black gradient-text counter" data-target="12">0</div>
+      <div class="mt-2 text-sm" style="color:var(--txt2)">核心功能</div>
+    </div>
+    <div class="text-center p-6 rounded-2xl" style="background:var(--surface2);border:1px solid var(--border)">
+      <div class="text-3xl sm:text-4xl font-black gradient-text counter" data-target="0" data-suffix="KB" data-value="0">0KB</div>
+      <div class="mt-2 text-sm" style="color:var(--txt2)">零依赖前端</div>
+    </div>
+    <div class="text-center p-6 rounded-2xl" style="background:var(--surface2);border:1px solid var(--border)">
+      <div class="text-3xl sm:text-4xl font-black gradient-text counter" data-target="3">0</div>
+      <div class="mt-2 text-sm" style="color:var(--txt2)">部署方式</div>
+    </div>
+    <div class="text-center p-6 rounded-2xl" style="background:var(--surface2);border:1px solid var(--border)">
+      <div class="text-3xl sm:text-4xl font-black gradient-text counter" data-target="100" data-suffix="%">0%</div>
+      <div class="mt-2 text-sm" style="color:var(--txt2)">开源免费</div>
+    </div>
+  </div>
 </section>
 
-<!-- 界面预览 -->
-<section>
-<div class="container">
-<div class="section-title fade-in">
-<h2>界面预览</h2>
-<p>在 iPhone / Android 浏览器中的真实效果</p>
-</div>
-</div>
-<div class="screenshots">
-<div class="phone fade-in"><div class="island"></div><img src="image/login-page.png" alt="ClawApp 登录连接页" loading="lazy"></div>
-<div class="phone fade-in fade-in-delay-1"><div class="island"></div><img src="image/chat-response.png" alt="ClawApp AI 聊天回复界面" loading="lazy"></div>
-<div class="phone fade-in fade-in-delay-2"><div class="island"></div><img src="image/chat-commands.jpg" alt="ClawApp 快捷指令面板" loading="lazy"></div>
-<div class="phone fade-in fade-in-delay-3"><div class="island"></div><img src="image/session-manager.jpg" alt="ClawApp 会话管理" loading="lazy"></div>
-<div class="phone fade-in fade-in-delay-4"><div class="island"></div><img src="image/commands-panel.png" alt="ClawApp 指令面板" loading="lazy"></div>
-<div class="phone fade-in fade-in-delay-4"><div class="island"></div><img src="image/settings-panel.jpg" alt="ClawApp 设置面板" loading="lazy"></div>
-</div>
+<!-- ===== 功能特性 ===== -->
+<section id="features" class="py-24 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-3xl sm:text-4xl font-black tracking-tight mb-4" style="color:var(--txt)">功能特性</h2>
+      <p class="text-base max-w-lg mx-auto" style="color:var(--txt2)">为移动端深度优化，开箱即用的 AI 聊天体验</p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="featureGrid">
+      <div class="spotlight-card rounded-2xl p-6 reveal" style="background:var(--surface1)">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(233,69,96,.1)"><svg class="w-5 h-5 text-[#e94560]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+        <h3 class="font-bold text-[15px] mb-2" style="color:var(--txt)">流式聊天</h3>
+        <p class="text-sm leading-relaxed" style="color:var(--txt2)">SSE 实时推送，打字机效果逐字输出，体验丝滑</p>
+      </div>
+      <div class="spotlight-card rounded-2xl p-6 reveal" style="background:var(--surface1)">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(123,47,247,.1)"><svg class="w-5 h-5 text-[#7b2ff7]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></div>
+        <h3 class="font-bold text-[15px] mb-2" style="color:var(--txt)">语音输入</h3>
+        <p class="text-sm leading-relaxed" style="color:var(--txt2)">语音转文字，HTTPS 环境下一键语音对话</p>
+      </div>
+      <div class="spotlight-card rounded-2xl p-6 reveal" style="background:var(--surface1)">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(233,69,96,.1)"><svg class="w-5 h-5 text-[#e94560]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+        <h3 class="font-bold text-[15px] mb-2" style="color:var(--txt)">图片收发</h3>
+        <p class="text-sm leading-relaxed" style="color:var(--txt2)">拍照/相册上传，AI 图片回复完整支持</p>
+      </div>
+      <div class="spotlight-card rounded-2xl p-6 reveal" style="background:var(--surface1)">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(123,47,247,.1)"><svg class="w-5 h-5 text-[#7b2ff7]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+        <h3 class="font-bold text-[15px] mb-2" style="color:var(--txt)">多智能体</h3>
+        <p class="text-sm leading-relaxed" style="color:var(--txt2)">新建会话时可选择不同 Agent，灵活切换</p>
+      </div>
+      <div class="spotlight-card rounded-2xl p-6 reveal" style="background:var(--surface1)">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(233,69,96,.1)"><svg class="w-5 h-5 text-[#e94560]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 3a3 3 0 00-3 3v12a3 3 0 003 3 3 3 0 003-3 3 3 0 00-3-3H6a3 3 0 00-3 3 3 3 0 003 3 3 3 0 003-3V6a3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3h12a3 3 0 003-3 3 3 0 00-3-3z"/></svg></div>
+        <h3 class="font-bold text-[15px] mb-2" style="color:var(--txt)">快捷指令</h3>
+        <p class="text-sm leading-relaxed" style="color:var(--txt2)">/model、/think、/new 等指令面板，高效操作</p>
+      </div>
+      <div class="spotlight-card rounded-2xl p-6 reveal" style="background:var(--surface1)">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(123,47,247,.1)"><svg class="w-5 h-5 text-[#7b2ff7]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></div>
+        <h3 class="font-bold text-[15px] mb-2" style="color:var(--txt)">工具调用</h3>
+        <p class="text-sm leading-relaxed" style="color:var(--txt2)">实时显示 AI 工具调用状态，过程透明可见</p>
+      </div>
+      <div class="spotlight-card rounded-2xl p-6 reveal" style="background:var(--surface1)">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(233,69,96,.1)"><svg class="w-5 h-5 text-[#e94560]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+        <h3 class="font-bold text-[15px] mb-2" style="color:var(--txt)">会话管理</h3>
+        <p class="text-sm leading-relaxed" style="color:var(--txt2)">切换、新建、删除会话，多轮对话井然有序</p>
+      </div>
+      <div class="spotlight-card rounded-2xl p-6 reveal" style="background:var(--surface1)">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(123,47,247,.1)"><svg class="w-5 h-5 text-[#7b2ff7]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2"/></svg></div>
+        <h3 class="font-bold text-[15px] mb-2" style="color:var(--txt)">主题 & 国际化</h3>
+        <p class="text-sm leading-relaxed" style="color:var(--txt2)">亮色/暗色/跟随系统 + 中英文切换</p>
+      </div>
+      <div class="spotlight-card rounded-2xl p-6 reveal" style="background:var(--surface1)">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(233,69,96,.1)"><svg class="w-5 h-5 text-[#e94560]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+        <h3 class="font-bold text-[15px] mb-2" style="color:var(--txt)">安全认证</h3>
+        <p class="text-sm leading-relaxed" style="color:var(--txt2)">Token + Ed25519 设备签名，兼容 OpenClaw 2.13+</p>
+      </div>
+      <div class="spotlight-card rounded-2xl p-6 reveal" style="background:var(--surface1)">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(123,47,247,.1)"><svg class="w-5 h-5 text-[#7b2ff7]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+        <h3 class="font-bold text-[15px] mb-2" style="color:var(--txt)">PWA + 离线缓存</h3>
+        <p class="text-sm leading-relaxed" style="color:var(--txt2)">IndexedDB 持久化，断网可查历史，恢复后自动同步</p>
+      </div>
+      <div class="spotlight-card rounded-2xl p-6 reveal" style="background:var(--surface1)">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(233,69,96,.1)"><svg class="w-5 h-5 text-[#e94560]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg></div>
+        <h3 class="font-bold text-[15px] mb-2" style="color:var(--txt)">智能重连</h3>
+        <p class="text-sm leading-relaxed" style="color:var(--txt2)">断线自动恢复，无闪烁，消息去重</p>
+      </div>
+      <div class="spotlight-card rounded-2xl p-6 reveal" style="background:var(--surface1)">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(123,47,247,.1)"><svg class="w-5 h-5 text-[#7b2ff7]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <h3 class="font-bold text-[15px] mb-2" style="color:var(--txt)">大屏适配</h3>
+        <p class="text-sm leading-relaxed" style="color:var(--txt2)">手机、平板、桌面浏览器全端响应式布局</p>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- 工作原理 -->
-<section>
-<div class="container">
-<div class="section-title fade-in">
-<h2>工作原理</h2>
-<p>SSE 事件流 + HTTP POST，Ed25519 设备签名自动握手</p>
-</div>
-<div class="arch fade-in">
-<div class="arch-node">
-<div class="arch-icon"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg></div>
-<strong>手机浏览器</strong>
-<span>Token 认证</span>
-</div>
-<div class="arch-arrow">
-<svg viewBox="0 0 48 24"><line class="flow-line" x1="0" y1="12" x2="40" y2="12"/><polygon class="arrow-head" points="38,6 48,12 38,18"/></svg>
-<div style="text-align:center;font-size:.7rem;color:var(--text3);margin-top:2px">SSE + POST</div>
-</div>
-<div class="arch-node">
-<div class="arch-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
-<strong>ClawApp Server</strong>
-<span>:3210 代理 + 离线缓存</span>
-</div>
-<div class="arch-arrow">
-<svg viewBox="0 0 48 24"><line class="flow-line" x1="0" y1="12" x2="40" y2="12"/><polygon class="arrow-head" points="38,6 48,12 38,18"/></svg>
-<div style="text-align:center;font-size:.7rem;color:var(--text3);margin-top:2px">WebSocket</div>
-</div>
-<div class="arch-node">
-<div class="arch-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-<strong>OpenClaw Gateway</strong>
-<span>:18789 Ed25519 签名</span>
-</div>
-</div>
-</div>
+<!-- ===== 截图预览 ===== -->
+<section id="screenshots" class="py-24 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-3xl sm:text-4xl font-black tracking-tight mb-4" style="color:var(--txt)">截图预览</h2>
+      <p class="text-base max-w-lg mx-auto" style="color:var(--txt2)">真实界面截图，所见即所得</p>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-6 md:gap-8 reveal">
+      <div class="phone-mock"><div class="island"></div><img src="image/login-page.png" alt="登录页" loading="lazy"><p class="text-center text-xs mt-3" style="color:var(--txt3)">登录连接</p></div>
+      <div class="phone-mock"><div class="island"></div><img src="image/chat-response.png" alt="AI 聊天回复" loading="lazy"><p class="text-center text-xs mt-3" style="color:var(--txt3)">流式聊天</p></div>
+      <div class="phone-mock"><div class="island"></div><img src="image/chat-commands.jpg" alt="快捷指令面板" loading="lazy"><p class="text-center text-xs mt-3" style="color:var(--txt3)">快捷指令</p></div>
+      <div class="phone-mock"><div class="island"></div><img src="image/session-manager.jpg" alt="会话管理" loading="lazy"><p class="text-center text-xs mt-3" style="color:var(--txt3)">会话管理</p></div>
+      <div class="phone-mock"><div class="island"></div><img src="image/commands-panel.png" alt="指令面板" loading="lazy"><p class="text-center text-xs mt-3" style="color:var(--txt3)">指令面板</p></div>
+      <div class="phone-mock"><div class="island"></div><img src="image/settings-panel.jpg" alt="设置面板" loading="lazy"><p class="text-center text-xs mt-3" style="color:var(--txt3)">设置与帮助</p></div>
+    </div>
+  </div>
 </section>
 
-<!-- 为什么选择 ClawApp -->
-<section>
-<div class="container">
-<div class="section-title fade-in">
-<h2>为什么选择 ClawApp</h2>
-<p>对比 OpenClaw 原生 Web UI 的移动端体验</p>
-</div>
-<div class="fade-in" style="max-width:720px;margin:0 auto;overflow-x:auto">
-<table class="compare-table">
-<thead><tr><th>特性</th><th>OpenClaw Web UI</th><th>ClawApp</th></tr></thead>
-<tbody>
-<tr><td>移动端适配</td><td class="cross">桌面端设计</td><td class="check">移动端优先</td></tr>
-<tr><td>通信协议</td><td class="cross">仅 WebSocket</td><td class="check">SSE + HTTP POST</td></tr>
-<tr><td>锁屏 / 切后台</td><td class="cross">连接断开</td><td class="check">SSE 自动恢复</td></tr>
-<tr><td>离线消息</td><td class="cross">不支持</td><td class="check">IndexedDB 持久化</td></tr>
-<tr><td>断线续传</td><td class="cross">需手动刷新</td><td class="check">Last-Event-ID 自动补发</td></tr>
-<tr><td>语音输入</td><td class="cross">不支持</td><td class="check">语音转文字</td></tr>
-<tr><td>PWA 安装</td><td class="cross">不支持</td><td class="check">添加到主屏幕</td></tr>
-<tr><td>外网访问</td><td class="cross">需自行配置</td><td class="check">cftunnel 一键穿透</td></tr>
-</tbody>
-</table>
-</div>
-</div>
+<!-- ===== 架构图 ===== -->
+<section class="py-24 px-6">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-3xl sm:text-4xl font-black tracking-tight mb-4" style="color:var(--txt)">工作原理</h2>
+      <p class="text-base max-w-lg mx-auto" style="color:var(--txt2)">三层架构，代理服务端自动完成设备签名握手</p>
+    </div>
+    <div class="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-4 reveal">
+      <div class="text-center p-6 rounded-2xl min-w-[180px]" style="background:var(--surface1);border:1px solid var(--border)">
+        <div class="text-3xl mb-2">📱</div>
+        <div class="font-bold text-sm" style="color:var(--txt)">手机浏览器</div>
+        <div class="text-xs mt-1" style="color:var(--txt3)">任意网络</div>
+      </div>
+      <div class="flex flex-col items-center gap-1" style="color:var(--txt3)">
+        <svg class="w-8 h-8 md:rotate-0 rotate-90" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 16h20M22 12l4 4-4 4" class="flow-dash"/></svg>
+        <span class="text-[10px]">WS / WSS</span>
+      </div>
+      <div class="text-center p-6 rounded-2xl min-w-[180px]" style="background:linear-gradient(135deg,rgba(233,69,96,.08),rgba(123,47,247,.08));border:1px solid rgba(233,69,96,.2)">
+        <div class="text-3xl mb-2">🖥️</div>
+        <div class="font-bold text-sm" style="color:var(--txt)">ClawApp Server</div>
+        <div class="text-xs mt-1" style="color:var(--txt3)">端口 3210 · 离线缓存</div>
+      </div>
+      <div class="flex flex-col items-center gap-1" style="color:var(--txt3)">
+        <svg class="w-8 h-8 md:rotate-0 rotate-90" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 16h20M22 12l4 4-4 4" class="flow-dash"/></svg>
+        <span class="text-[10px]">WS + Ed25519</span>
+      </div>
+      <div class="text-center p-6 rounded-2xl min-w-[180px]" style="background:var(--surface1);border:1px solid var(--border)">
+        <div class="text-3xl mb-2">🤖</div>
+        <div class="font-bold text-sm" style="color:var(--txt)">OpenClaw Gateway</div>
+        <div class="text-xs mt-1" style="color:var(--txt3)">端口 18789</div>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- 快速开始 -->
-<section id="quickstart">
-<div class="container">
-<div class="section-title fade-in">
-<h2>快速开始</h2>
-<p>一键部署，打开浏览器即可使用</p>
-</div>
-<div class="code-wrapper fade-in" style="margin-bottom:16px">
-<div class="code-tabs"><span class="code-tab active" style="cursor:default">一键部署 (Mac / Linux)</span></div>
-<div class="code-block active"><button class="copy-btn" onclick="copyCode(this)">复制</button>curl -fsSL https://raw.githubusercontent.com/qingchencloud/clawapp/main/install.sh | bash</div>
-</div>
-<div class="code-wrapper fade-in" style="margin-bottom:16px">
-<div class="code-tabs"><span class="code-tab active" style="cursor:default">一键部署 (Windows PowerShell)</span></div>
-<div class="code-block active"><button class="copy-btn" onclick="copyCode(this)">复制</button>irm https://raw.githubusercontent.com/qingchencloud/clawapp/main/install.ps1 | iex</div>
-</div>
-<p class="fade-in" style="text-align:center;color:var(--text3);font-size:.88rem;margin-bottom:28px">自动检测环境、安装依赖、构建前端、配置 Token，支持 PM2 常驻运行</p>
+<!-- ===== 对比表 ===== -->
+<section class="py-24 px-6">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-3xl sm:text-4xl font-black tracking-tight mb-4" style="color:var(--txt)">为什么选 ClawApp</h2>
+      <p class="text-base max-w-lg mx-auto" style="color:var(--txt2)">与 OpenClaw 原生 Web UI 的功能对比</p>
+    </div>
+    <div class="overflow-x-auto reveal">
+      <table class="compare-tbl">
+        <thead><tr><th>功能</th><th>OpenClaw Web UI</th><th>ClawApp</th></tr></thead>
+        <tbody>
+          <tr><td style="color:var(--txt)">手机浏览器访问</td><td class="no">需要本机</td><td class="yes">任意设备</td></tr>
+          <tr><td style="color:var(--txt)">流式聊天</td><td class="yes">支持</td><td class="yes">支持</td></tr>
+          <tr><td style="color:var(--txt)">语音输入</td><td class="no">不支持</td><td class="yes">支持 (HTTPS)</td></tr>
+          <tr><td style="color:var(--txt)">离线消息缓存</td><td class="no">不支持</td><td class="yes">IndexedDB</td></tr>
+          <tr><td style="color:var(--txt)">PWA 安装</td><td class="no">不支持</td><td class="yes">支持</td></tr>
+          <tr><td style="color:var(--txt)">Android APK</td><td class="no">不支持</td><td class="yes">自动构建</td></tr>
+          <tr><td style="color:var(--txt)">外网访问</td><td class="no">需自行配置</td><td class="yes">cftunnel 一键</td></tr>
+          <tr><td style="color:var(--txt)">设备认证</td><td class="no">Token 明文</td><td class="yes">Ed25519 签名</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
-<div class="code-wrapper fade-in">
-<div class="code-tabs">
-<button class="code-tab active" onclick="switchTab(this,0)">Docker</button>
-<button class="code-tab" onclick="switchTab(this,1)">手动部署</button>
-</div>
-<div class="code-block active"><button class="copy-btn" onclick="copyCode(this)">复制</button>git clone https://github.com/qingchencloud/clawapp.git
+<!-- ===== 快速部署 ===== -->
+<section id="quickstart" class="py-24 px-6">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-3xl sm:text-4xl font-black tracking-tight mb-4" style="color:var(--txt)">快速部署</h2>
+      <p class="text-base max-w-lg mx-auto" style="color:var(--txt2)">一条命令，开箱即用</p>
+    </div>
+    <div class="reveal">
+      <!-- 一键脚本 -->
+      <div class="code-box mb-6">
+        <div class="flex border-b" style="border-color:var(--border)">
+          <button class="code-tab-btn active" data-tab="mac">Mac / Linux</button>
+          <button class="code-tab-btn" data-tab="win">Windows</button>
+          <button class="code-tab-btn" data-tab="docker">Docker</button>
+          <button class="code-tab-btn" data-tab="manual">手动部署</button>
+        </div>
+        <div class="relative">
+          <button class="copy-btn absolute top-3 right-3 px-3 py-1.5 rounded-lg text-xs font-medium transition-all" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt2)" onclick="copyCode(this)">复制</button>
+          <pre id="tab-mac">curl -fsSL https://raw.githubusercontent.com/qingchencloud/clawapp/main/install.sh | bash</pre>
+          <pre id="tab-win" class="hidden">irm https://raw.githubusercontent.com/qingchencloud/clawapp/main/install.ps1 | iex</pre>
+          <pre id="tab-docker" class="hidden">git clone https://github.com/qingchencloud/clawapp.git
 cd clawapp
-
-# 创建 .env
-echo 'PROXY_TOKEN=my-secret-token' > .env
-echo 'OPENCLAW_GATEWAY_TOKEN=你的token' >> .env
-
-# 启动
-docker compose up -d --build
-
-# 手机访问 http://你的电脑IP:3210</div>
-<div class="code-block"><button class="copy-btn" onclick="copyCode(this)">复制</button>git clone https://github.com/qingchencloud/clawapp.git
-cd clawapp
-npm run install:all
-npm run build:h5
+echo 'PROXY_TOKEN=my-token-123' > .env
+echo 'OPENCLAW_GATEWAY_TOKEN=your-gw-token' >> .env
+docker compose up -d --build</pre>
+          <pre id="tab-manual" class="hidden">git clone https://github.com/qingchencloud/clawapp.git
+cd clawapp && npm run install:all && npm run build:h5
 cp server/.env.example server/.env
 # 编辑 server/.env 填入 token
-npm start
-
-# 手机访问 http://你的电脑IP:3210</div>
-</div>
-</div>
+npm start</pre>
+        </div>
+      </div>
+      <p class="text-sm text-center" style="color:var(--txt3)">脚本会自动检测环境、安装依赖、构建前端、交互式配置 Token，并支持 PM2 常驻运行</p>
+    </div>
+  </div>
 </section>
 
-<!-- 外网访问 -->
-<section id="remote">
-<div class="container">
-<div class="section-title fade-in">
-<h2>外网访问</h2>
-<p>不在同一 WiFi？用 <a href="https://cftunnel.qt.cool" target="_blank" rel="noopener">cftunnel</a> 一条命令搞定公网穿透</p>
-</div>
-<div class="features fade-in" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
-<div class="feature-card">
-<div class="icon"><svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
-<h3>临时分享（零配置）</h3>
-<div class="code-wrapper" style="margin-top:12px;border:1px solid var(--border)">
-<div class="code-block active" style="display:block;border-radius:var(--radius-sm);font-size:.82rem;padding:14px 16px">cftunnel quick 3210
-# https://xxx-yyy.trycloudflare.com</div>
-</div>
-<p style="color:var(--text3);font-size:.82rem;margin-top:10px">免费、自动 HTTPS、无需域名和公网 IP</p>
-</div>
-<div class="feature-card">
-<div class="icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-<h3>固定域名（持久稳定）</h3>
-<div class="code-wrapper" style="margin-top:12px;border:1px solid var(--border)">
-<div class="code-block active" style="display:block;border-radius:var(--radius-sm);font-size:.82rem;padding:14px 16px">cftunnel init
-cftunnel create my-tunnel
-cftunnel add clawapp 3210 --domain chat.example.com
-cftunnel up</div>
-</div>
-<p style="color:var(--text3);font-size:.82rem;margin-top:10px">自有域名 + 开机自启 <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:.8rem">cftunnel install</code></p>
-</div>
-</div>
-<p class="fade-in" style="text-align:center;margin-top:24px">
-<a href="https://github.com/qingchencloud/cftunnel" class="btn btn-outline" style="font-size:.85rem" target="_blank" rel="noopener">
-<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="vertical-align:-2px"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-cftunnel GitHub
-</a>
-<a href="https://cftunnel.qt.cool" class="btn btn-outline" style="font-size:.85rem;margin-left:10px" target="_blank" rel="noopener">产品主页</a>
-</p>
-</div>
+<!-- ===== 远程访问 ===== -->
+<section class="py-24 px-6" style="background:var(--surface1)">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-3xl sm:text-4xl font-black tracking-tight mb-4" style="color:var(--txt)">外网访问</h2>
+      <p class="text-base max-w-lg mx-auto" style="color:var(--txt2)">不在同一网络？一条命令搞定 HTTPS 穿透</p>
+    </div>
+    <div class="grid md:grid-cols-2 gap-6 reveal">
+      <div class="spotlight-card rounded-2xl p-6" style="background:var(--surface2)">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="px-3 py-1 rounded-full text-xs font-bold text-white" style="background:linear-gradient(135deg,#e94560,#7b2ff7)">推荐</span>
+          <h3 class="font-bold" style="color:var(--txt)">cftunnel 一键穿透</h3>
+        </div>
+        <div class="code-box mb-3"><pre>cftunnel quick 3210</pre></div>
+        <p class="text-sm" style="color:var(--txt2)">免费、自动 HTTPS、无需公网 IP、支持固定域名</p>
+        <a href="https://github.com/qingchencloud/cftunnel" target="_blank" rel="noopener" class="inline-block mt-3 text-sm font-medium text-[#e94560] hover:underline">查看 cftunnel 文档 &rarr;</a>
+      </div>
+      <div class="spotlight-card rounded-2xl p-6" style="background:var(--surface2)">
+        <h3 class="font-bold mb-4" style="color:var(--txt)">SSH 隧道</h3>
+        <div class="code-box mb-3"><pre>ssh -f -N -R 0.0.0.0:3210:localhost:3210 user@server</pre></div>
+        <p class="text-sm" style="color:var(--txt2)">需要公网服务器，简单快速，但无 HTTPS（语音不可用）</p>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- 连接配置 -->
-<section id="connection">
-<div class="container">
-<div class="section-title fade-in">
-<h2>连接配置</h2>
-<p>App 登录页需要填写服务器地址和 Token，这里教你怎么获取</p>
-</div>
-<div class="features fade-in connection-cards">
-
-<div class="feature-card">
-<div class="icon"><svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
-<h3>① 服务器地址</h3>
-<p style="margin-bottom:12px">填运行 ClawApp Server 的电脑 IP + 端口</p>
-<div style="color:var(--text2);font-size:.86rem;line-height:2">
-<p><span style="color:var(--accent);font-weight:600">局域网</span> — <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:.82rem">电脑IP:3210</code></p>
-<p><span style="color:var(--accent);font-weight:600">外网</span> — cftunnel 生成的域名</p>
-<p><span style="color:var(--accent);font-weight:600">本机</span> — <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:.82rem">localhost:3210</code></p>
-</div>
-<div class="code-wrapper" style="margin-top:14px;border:1px solid var(--border)">
-<div class="code-block active" style="display:block;border-radius:var(--radius-sm);font-size:.82rem;padding:12px 14px"><button class="copy-btn" onclick="copyCode(this)">复制</button># 查看电脑局域网 IP
-# Mac
-ifconfig | grep "inet " | grep -v 127
-# Windows: ipconfig
-# Linux: ip addr</div>
-</div>
-<p style="color:var(--text3);font-size:.82rem;margin-top:10px">例如 <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:.8rem">192.168.1.100:3210</code></p>
-</div>
-
-<div class="feature-card">
-<div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
-<h3>② App 登录 Token</h3>
-<p style="margin-bottom:12px">这是你部署时<span style="color:var(--text);font-weight:600">自己设置</span>的访问密码</p>
-<div style="color:var(--text2);font-size:.86rem;line-height:2">
-<p><span style="color:var(--accent);font-weight:600">一键脚本</span> — 安装时引导设置</p>
-<p><span style="color:var(--accent);font-weight:600">手动部署</span> — 在 .env 中自定义</p>
-<p><span style="color:var(--accent);font-weight:600">忘记了？</span> — 查看配置文件 ↓</p>
-</div>
-<div class="code-wrapper" style="margin-top:14px;border:1px solid var(--border)">
-<div class="code-block active" style="display:block;border-radius:var(--radius-sm);font-size:.82rem;padding:12px 14px"><button class="copy-btn" onclick="copyCode(this)">复制</button># 查看你设置的 Token
-cat server/.env | grep PROXY_TOKEN
-
-# 或者重新设一个
-# PROXY_TOKEN=my-secret-123</div>
-</div>
-<p style="color:var(--text3);font-size:.82rem;margin-top:10px">自己设什么，App 里就填什么</p>
-</div>
-
-<div class="feature-card">
-<div class="icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-<h3>③ Gateway Token</h3>
-<p style="margin-bottom:12px">从 OpenClaw 配置文件中获取，<span style="color:var(--text);font-weight:600">非自定义</span></p>
-<div style="color:var(--text2);font-size:.86rem;line-height:2">
-<p><span style="color:var(--accent);font-weight:600">一键脚本</span> — 自动读取，无需操心</p>
-<p><span style="color:var(--accent);font-weight:600">手动部署</span> — 需手动查找 ↓</p>
-<p><span style="color:var(--accent);font-weight:600">注意</span> — 和 App Token 是两个值</p>
-</div>
-<div class="code-wrapper" style="margin-top:14px;border:1px solid var(--border)">
-<div class="code-block active" style="display:block;border-radius:var(--radius-sm);font-size:.82rem;padding:12px 14px"><button class="copy-btn" onclick="copyCode(this)">复制</button># 从 OpenClaw 配置中获取
-cat ~/.openclaw/openclaw.json \
-  | grep token
-
-# 找到 gateway.auth.token 的值</div>
-</div>
-<p style="color:var(--text3);font-size:.82rem;margin-top:10px">填入 .env 的 OPENCLAW_GATEWAY_TOKEN</p>
-</div>
-
-</div>
-</div>
+<!-- ===== 连接说明 ===== -->
+<section id="connection" class="py-24 px-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-3xl sm:text-4xl font-black tracking-tight mb-4" style="color:var(--txt)">连接配置</h2>
+      <p class="text-base max-w-lg mx-auto" style="color:var(--txt2)">打开页面后只需填写两个字段即可连接</p>
+    </div>
+    <div class="grid sm:grid-cols-3 gap-6 reveal">
+      <div class="spotlight-card rounded-2xl p-6" style="background:var(--surface1)">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(233,69,96,.1)">
+          <svg class="w-5 h-5 text-[#e94560]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/></svg>
+        </div>
+        <h3 class="font-bold text-[15px] mb-2" style="color:var(--txt)">服务器地址</h3>
+        <p class="text-sm leading-relaxed" style="color:var(--txt2)">局域网填 <code class="text-[#e94560]">电脑IP:3210</code>，外网填公网地址或 cftunnel 域名</p>
+      </div>
+      <div class="spotlight-card rounded-2xl p-6" style="background:var(--surface1)">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(123,47,247,.1)">
+          <svg class="w-5 h-5 text-[#7b2ff7]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <h3 class="font-bold text-[15px] mb-2" style="color:var(--txt)">App Token</h3>
+        <p class="text-sm leading-relaxed" style="color:var(--txt2)">你在 <code class="text-[#e94560]">.env</code> 中设置的 <code class="text-[#e94560]">PROXY_TOKEN</code>，相当于访问密码</p>
+      </div>
+      <div class="spotlight-card rounded-2xl p-6" style="background:var(--surface1)">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background:rgba(233,69,96,.1)">
+          <svg class="w-5 h-5 text-[#e94560]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3 class="font-bold text-[15px] mb-2" style="color:var(--txt)">Gateway Token</h3>
+        <p class="text-sm leading-relaxed" style="color:var(--txt2)">在 <code class="text-[#e94560]">~/.openclaw/openclaw.json</code> 的 <code class="text-[#e94560]">gateway.auth.token</code> 中获取</p>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- 下载使用 -->
-<section id="download">
-<div class="container">
-<div class="section-title fade-in">
-<h2>下载 & 使用</h2>
-<p>部署服务端后，选择适合你的方式连接</p>
-</div>
-<div class="features fade-in" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+<!-- ===== FAQ ===== -->
+<section id="faq" class="py-24 px-6" style="background:var(--surface1)">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-3xl sm:text-4xl font-black tracking-tight mb-4" style="color:var(--txt)">常见问题</h2>
+      <p class="text-base max-w-lg mx-auto" style="color:var(--txt2)">部署和使用中的常见疑问</p>
+    </div>
+    <div class="space-y-4 reveal">
+      <details class="spotlight-card rounded-2xl p-6" style="background:var(--surface2)">
+        <summary class="font-bold cursor-pointer select-none" style="color:var(--txt)">一直显示「连接中」或报 502 Bad Gateway 错误？</summary>
+        <div class="mt-4 space-y-3 text-sm leading-relaxed" style="color:var(--txt2)">
+          <p>1. 检查 OpenClaw Gateway 是否在运行：<code class="text-[#e94560]">curl http://localhost:18789</code></p>
+          <p>2. 后台日志如果提示 <code class="text-[#e94560]">Gateway 握手失败: NOT_PAIRED</code> 或 <code class="text-[#e94560]">pairing required</code>，是因为根据 OpenClaw 的安全机制，首次连接需要作为设备进行配对审批。<strong>请在运行 Gateway 的服务端执行以下命令批准配对：</strong></p>
+          <div class="code-box mt-2"><pre># 查看待配对设备列表并获取 requestId
+openclaw gateway call device.pair.list --json
 
-<div class="feature-card">
-<div class="icon"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><path d="M12 18h.01"/></svg></div>
-<h3>iPhone / iPad</h3>
-<p style="margin-bottom:12px">Safari 打开即用，无需 App Store：</p>
-<ol style="color:var(--text2);font-size:.88rem;padding-left:18px;line-height:1.8">
-<li>Safari 打开 <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:.82rem">http://你的IP:3210</code></li>
-<li>输入服务器地址和 Token，连接聊天</li>
-<li>点击 Safari 底部分享按钮</li>
-<li>选择「添加到主屏幕」</li>
-</ol>
-<p style="color:var(--text3);font-size:.82rem;margin-top:10px">PWA 模式支持全屏 + 离线缓存</p>
-</div>
-
-<div class="feature-card">
-<div class="icon"><svg viewBox="0 0 24 24"><path d="M5 16V8h14v8"/><path d="M2 20h20"/><path d="M12 16v4"/></svg></div>
-<h3>Android</h3>
-<p style="margin-bottom:12px">两种方式可选：</p>
-<p style="color:var(--text);font-size:.9rem;font-weight:600;margin-bottom:6px">浏览器直接用</p>
-<p style="color:var(--text2);font-size:.88rem;line-height:1.7;margin-bottom:12px">Chrome 打开后会提示「添加到主屏幕」</p>
-<p style="color:var(--text);font-size:.9rem;font-weight:600;margin-bottom:6px">下载 APK 安装</p>
-<a href="https://github.com/qingchencloud/clawapp/releases/latest" class="btn btn-primary" style="font-size:.85rem;padding:8px 20px;display:inline-flex;margin-bottom:8px" target="_blank" rel="noopener">
-<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-下载最新 APK
-</a>
-<p style="color:var(--text3);font-size:.82rem">从 GitHub Releases 下载</p>
-</div>
-
-<div class="feature-card">
-<div class="icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div>
-<h3>电脑浏览器</h3>
-<p style="margin-bottom:12px">直接在电脑浏览器中使用：</p>
-<ol style="color:var(--text2);font-size:.88rem;padding-left:18px;line-height:1.8">
-<li>打开 <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:.82rem">http://localhost:3210</code></li>
-<li>输入 Token 连接即可</li>
-</ol>
-<p style="color:var(--text3);font-size:.82rem;margin-top:10px">电脑端自动切换宽屏布局</p>
-</div>
-
-</div>
-</div>
+# 使用 requestId 批准配对
+openclaw gateway call device.pair.approve --params '{"requestId":"&lt;你的id&gt;"}' --json</pre></div>
+          <p>3. 确认 <code class="text-[#e94560]">OPENCLAW_GATEWAY_TOKEN</code> 正确</p>
+          <p>4. Docker 部署时，Gateway 地址应为 <code class="text-[#e94560]">ws://host.docker.internal:18789</code></p>
+        </div>
+      </details>
+      <details class="spotlight-card rounded-2xl p-6" style="background:var(--surface2)">
+        <summary class="font-bold cursor-pointer select-none" style="color:var(--txt)">手机打不开页面？</summary>
+        <div class="mt-4 space-y-2 text-sm leading-relaxed" style="color:var(--txt2)">
+          <p>1. 手机和电脑是否在同一 WiFi？</p>
+          <p>2. 电脑防火墙是否放行了 3210 端口？</p>
+          <p>3. 地址是否用了电脑 IP（不是 localhost）？</p>
+        </div>
+      </details>
+      <details class="spotlight-card rounded-2xl p-6" style="background:var(--surface2)">
+        <summary class="font-bold cursor-pointer select-none" style="color:var(--txt)">语音输入按钮点了没反应？</summary>
+        <div class="mt-4 text-sm leading-relaxed" style="color:var(--txt2)">
+          <p>浏览器要求 HTTPS 才能使用麦克风。局域网 HTTP 访问时，语音按钮会提示需要 HTTPS。解决方案：使用 <code class="text-[#e94560]">cftunnel quick 3210</code> 一键开启 HTTPS 隧道。</p>
+        </div>
+      </details>
+      <details class="spotlight-card rounded-2xl p-6" style="background:var(--surface2)">
+        <summary class="font-bold cursor-pointer select-none" style="color:var(--txt)">能多人同时使用吗？</summary>
+        <div class="mt-4 text-sm leading-relaxed" style="color:var(--txt2)">
+          <p>可以。每个连接创建独立的 Gateway 会话，但共享同一个 OpenClaw 实例。</p>
+        </div>
+      </details>
+    </div>
+  </div>
 </section>
 
-<!-- 社区交流 -->
-<section id="community">
-<div class="container">
-<div class="section-title fade-in">
-<h2>社区交流</h2>
-<p>加入社区，交流使用心得、反馈问题、获取最新动态</p>
-</div>
-<div class="features fade-in" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
-<div class="feature-card" style="text-align:center">
-<a href="https://qt.cool/c/OpenClaw" target="_blank" rel="noopener">
-<img src="image/OpenClaw-QQ.png" alt="QQ 群二维码" style="width:160px;border-radius:12px;margin-bottom:12px" loading="lazy">
-</a>
-<h3>QQ 群</h3>
-<p>2000 人大群，满员自动切换</p>
-<a href="https://qt.cool/c/OpenClaw" class="btn btn-outline" style="font-size:.82rem;padding:6px 16px;margin-top:10px" target="_blank" rel="noopener">点击链接加入</a>
-</div>
-<div class="feature-card" style="text-align:center">
-<a href="https://qt.cool/c/OpenClawWx" target="_blank" rel="noopener">
-<img src="image/OpenClawWx.png" alt="微信群二维码" style="width:160px;border-radius:12px;margin-bottom:12px" loading="lazy">
-</a>
-<h3>微信群</h3>
-<p>扫码加入，问题随时反馈</p>
-<a href="https://qt.cool/c/OpenClawWx" class="btn btn-outline" style="font-size:.82rem;padding:6px 16px;margin-top:10px" target="_blank" rel="noopener">点击链接加入</a>
-</div>
-<div class="feature-card" style="text-align:center">
-<div class="icon" style="margin:0 auto 12px"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></div>
-<h3>元宝派社群</h3>
-<p>腾讯元宝派讨论区</p>
-<a href="https://yb.tencent.com/gp/i/LsvIw7mdR7Lb" class="btn btn-outline" style="font-size:.82rem;padding:6px 16px;margin-top:10px" target="_blank" rel="noopener">加入元宝派</a>
-</div>
-<div class="feature-card" style="text-align:center">
-<div class="icon" style="margin:0 auto 12px"><svg viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg></div>
-<h3>Discord</h3>
-<p>国际交流频道</p>
-<a href="https://discord.gg/U9AttmsNHh" class="btn btn-outline" style="font-size:.82rem;padding:6px 16px;margin-top:10px" target="_blank" rel="noopener">加入 Discord</a>
-</div>
-</div>
-</div>
+<!-- ===== 下载使用 ===== -->
+<section id="download" class="py-24 px-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-3xl sm:text-4xl font-black tracking-tight mb-4" style="color:var(--txt)">下载使用</h2>
+      <p class="text-base max-w-lg mx-auto" style="color:var(--txt2)">多平台支持，随时随地聊天</p>
+    </div>
+    <div class="grid sm:grid-cols-3 gap-6 reveal">
+      <div class="spotlight-card rounded-2xl p-6 text-center" style="background:var(--surface1)">
+        <div class="text-4xl mb-3">📱</div>
+        <h3 class="font-bold mb-2" style="color:var(--txt)">iPhone / iPad</h3>
+        <p class="text-sm mb-4" style="color:var(--txt2)">Safari 打开后点击「添加到主屏幕」</p>
+        <a href="https://chat.qrj.ai" target="_blank" rel="noopener" class="inline-block px-6 py-2.5 rounded-xl font-medium text-sm text-white transition-transform active:scale-95" style="background:linear-gradient(135deg,#e94560,#7b2ff7)">立即访问</a>
+      </div>
+      <div class="spotlight-card rounded-2xl p-6 text-center" style="background:var(--surface1)">
+        <div class="text-4xl mb-3">🤖</div>
+        <h3 class="font-bold mb-2" style="color:var(--txt)">Android</h3>
+        <p class="text-sm mb-4" style="color:var(--txt2)">下载 APK 安装包</p>
+        <a href="https://github.com/qingchencloud/clawapp/releases" target="_blank" rel="noopener" class="inline-block px-6 py-2.5 rounded-xl font-medium text-sm text-white transition-transform active:scale-95" style="background:linear-gradient(135deg,#e94560,#7b2ff7)">下载 APK</a>
+      </div>
+      <div class="spotlight-card rounded-2xl p-6 text-center" style="background:var(--surface1)">
+        <div class="text-4xl mb-3">💻</div>
+        <h3 class="font-bold mb-2" style="color:var(--txt)">桌面浏览器</h3>
+        <p class="text-sm mb-4" style="color:var(--txt2)">Chrome / Edge / Firefox 直接访问</p>
+        <a href="https://chat.qrj.ai" target="_blank" rel="noopener" class="inline-block px-6 py-2.5 rounded-xl font-medium text-sm text-white transition-transform active:scale-95" style="background:linear-gradient(135deg,#e94560,#7b2ff7)">立即访问</a>
+      </div>
+    </div>
+  </div>
 </section>
 
-<!-- Footer -->
-<footer role="contentinfo">
-<div class="links">
-<a href="https://github.com/qingchencloud/clawapp">GitHub</a>
-<a href="https://qingchencloud.com">官网</a>
-<a href="https://qt.cool">qt.cool</a>
-<a href="https://discord.gg/U9AttmsNHh">Discord</a>
-</div>
-<div class="copyright">由 <a href="https://qingchencloud.com">武汉晴辰天下网络科技有限公司</a> 开发维护 · MIT License</div>
-<div class="icp"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">鄂ICP备2025164966号</a></div>
-</footer>
+<!-- ===== 社区交流 ===== -->
+<section id="community" class="py-24 px-6" style="background:var(--surface1)">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-16 reveal">
+      <h2 class="text-3xl sm:text-4xl font-black tracking-tight mb-4" style="color:var(--txt)">社区交流</h2>
+      <p class="text-base max-w-lg mx-auto" style="color:var(--txt2)">加入社区，交流使用心得、反馈问题、获取最新动态</p>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-8 reveal">
+      <div class="text-center">
+        <h3 class="font-bold mb-4" style="color:var(--txt)">QQ 交流群</h3>
+        <img src="image/OpenClaw-QQ.png" alt="QQ交流群" class="w-48 mx-auto rounded-2xl shadow-lg mb-3" loading="lazy">
+        <p class="text-sm" style="color:var(--txt2)">扫码或 <a href="https://qt.cool/c/OpenClaw" target="_blank" rel="noopener" class="text-[#e94560] hover:underline">点击链接</a> 加入</p>
+      </div>
+      <div class="text-center">
+        <h3 class="font-bold mb-4" style="color:var(--txt)">微信交流群</h3>
+        <img src="image/OpenClawWx.png" alt="微信交流群" class="w-48 mx-auto rounded-2xl shadow-lg mb-3" loading="lazy">
+        <p class="text-sm" style="color:var(--txt2)">扫码或 <a href="https://qt.cool/c/OpenClawWx" target="_blank" rel="noopener" class="text-[#e94560] hover:underline">点击链接</a> 加入</p>
+      </div>
+    </div>
+    <div class="flex flex-wrap justify-center gap-4 mt-12 reveal">
+      <a href="https://discord.gg/U9AttmsNHh" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-sm transition-all hover:scale-105" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt)">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+        Discord
+      </a>
+      <a href="https://yb.tencent.com/gp/i/LsvIw7mdR7Lb" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-sm transition-all hover:scale-105" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt)">元宝派</a>
+      <a href="https://github.com/qingchencloud/clawapp" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium text-sm transition-all hover:scale-105" style="background:var(--surface2);border:1px solid var(--border);color:var(--txt)">
+        <svg class="w-5 h-5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</section>
+
 </main>
 
+<!-- ===== 页脚 ===== -->
+<footer class="py-12 px-6 border-t" style="background:var(--surface1);border-color:var(--border)">
+  <div class="max-w-6xl mx-auto">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+      <div class="text-center md:text-left">
+        <p class="text-sm mb-2" style="color:var(--txt2)">由 <a href="https://qt.cool" target="_blank" rel="noopener" class="text-[#e94560] hover:underline">晴辰云</a> 开发维护</p>
+        <p class="text-xs" style="color:var(--txt3)">MIT License · <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener" class="hover:underline">鄂ICP备2025164966号</a></p>
+      </div>
+      <div class="flex gap-4">
+        <a href="https://github.com/qingchencloud/clawapp" target="_blank" rel="noopener" class="text-sm hover:text-[#e94560] transition-colors" style="color:var(--txt2)">GitHub</a>
+        <a href="https://clawapp.qt.cool" target="_blank" rel="noopener" class="text-sm hover:text-[#e94560] transition-colors" style="color:var(--txt2)">官网</a>
+        <a href="https://qt.cool" target="_blank" rel="noopener" class="text-sm hover:text-[#e94560] transition-colors" style="color:var(--txt2)">晴辰云</a>
+        <a href="https://discord.gg/U9AttmsNHh" target="_blank" rel="noopener" class="text-sm hover:text-[#e94560] transition-colors" style="color:var(--txt2)">Discord</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
 <script>
-// 滚动动画 (IntersectionObserver)
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target) } })
-}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+// ===== 主题切换（无闪烁） =====
+(function(){
+  const html=document.documentElement;
+  const stored=localStorage.getItem('theme');
+  if(stored==='light')html.classList.remove('dark');
+  else if(stored==='dark')html.classList.add('dark');
+  else html.classList.toggle('dark',!window.matchMedia('(prefers-color-scheme:light)').matches);
+})();
 
-// 导航栏滚动效果
-const nav = document.getElementById('topnav');
-window.addEventListener('scroll', () => {
-  nav.classList.toggle('scrolled', window.scrollY > 20);
-}, { passive: true });
-
-// Tab 切换
-function switchTab(btn, idx) {
-  const wrapper = btn.closest('.code-wrapper');
-  if (!wrapper) return;
-  const tabs = wrapper.querySelector('.code-tabs');
-  if (tabs) tabs.querySelectorAll('.code-tab').forEach((t, j) => t.classList.toggle('active', j === idx));
-  // 只选 wrapper 的直接子 code-block
-  Array.from(wrapper.children).filter(c => c.classList.contains('code-block')).forEach((b, j) => b.classList.toggle('active', j === idx));
+const themeToggle=document.getElementById('themeToggle');
+const themeToggleMobile=document.getElementById('themeToggleMobile');
+const iconSun=document.getElementById('iconSun');
+const iconMoon=document.getElementById('iconMoon');
+function updateThemeIcon(){
+  const isDark=document.documentElement.classList.contains('dark');
+  iconSun.classList.toggle('hidden',isDark);
+  iconMoon.classList.toggle('hidden',!isDark);
 }
+function toggleTheme(){
+  const html=document.documentElement;
+  html.classList.toggle('dark');
+  localStorage.setItem('theme',html.classList.contains('dark')?'dark':'light');
+  updateThemeIcon();
+}
+updateThemeIcon();
+themeToggle.addEventListener('click',toggleTheme);
+themeToggleMobile.addEventListener('click',toggleTheme);
 
-// 一键复制
-function copyCode(btn) {
-  const block = btn.parentElement;
-  const text = block.textContent.replace('复制', '').replace('已复制', '').trim();
-  navigator.clipboard.writeText(text).then(() => {
-    btn.textContent = '已复制';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied') }, 2000);
+// ===== 汉堡菜单 =====
+const burgerBtn=document.getElementById('burgerBtn');
+const mobileMenu=document.getElementById('mobileMenu');
+const closeMenu=document.getElementById('closeMenu');
+const menuLinks=document.querySelectorAll('.menu-link');
+burgerBtn.addEventListener('click',()=>mobileMenu.classList.add('open'));
+closeMenu.addEventListener('click',()=>mobileMenu.classList.remove('open'));
+menuLinks.forEach(link=>link.addEventListener('click',()=>mobileMenu.classList.remove('open')));
+
+// ===== 导航滚动阴影 =====
+const topnav=document.getElementById('topnav');
+window.addEventListener('scroll',()=>{
+  if(window.scrollY>50)topnav.style.boxShadow='0 4px 20px rgba(0,0,0,.1)';
+  else topnav.style.boxShadow='none';
+});
+
+// ===== IntersectionObserver 滚动揭示 =====
+const revealObserver=new IntersectionObserver((entries)=>{
+  entries.forEach((entry,idx)=>{
+    if(entry.isIntersecting){
+      setTimeout(()=>entry.target.classList.add('visible'),idx*80);
+      revealObserver.unobserve(entry.target);
+    }
+  });
+},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>revealObserver.observe(el));
+
+// ===== Spotlight 卡片鼠标跟踪 =====
+const featureGrid=document.getElementById('featureGrid');
+if(featureGrid){
+  featureGrid.addEventListener('mousemove',(e)=>{
+    const cards=featureGrid.querySelectorAll('.spotlight-card');
+    cards.forEach(card=>{
+      const rect=card.getBoundingClientRect();
+      const x=e.clientX-rect.left;
+      const y=e.clientY-rect.top;
+      card.style.setProperty('--mouse-x',`${x}px`);
+      card.style.setProperty('--mouse-y',`${y}px`);
+    });
   });
 }
-</script>
 
+// ===== 数字暴涨动画 =====
+const counterObserver=new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      const el=entry.target;
+      const target=parseInt(el.dataset.target);
+      const suffix=el.dataset.suffix||'';
+      const duration=1500;
+      const start=performance.now();
+      function animate(now){
+        const elapsed=now-start;
+        const progress=Math.min(elapsed/duration,1);
+        const eased=1-Math.pow(1-progress,3);
+        const current=Math.floor(eased*target);
+        el.textContent=current+suffix;
+        if(progress<1)requestAnimationFrame(animate);
+      }
+      requestAnimationFrame(animate);
+      counterObserver.unobserve(el);
+    }
+  });
+},{threshold:0.5});
+document.querySelectorAll('.counter').forEach(el=>counterObserver.observe(el));
+
+// ===== 代码 Tab 切换 =====
+const tabBtns=document.querySelectorAll('.code-tab-btn');
+tabBtns.forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const tab=btn.dataset.tab;
+    tabBtns.forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('pre[id^="tab-"]').forEach(pre=>pre.classList.add('hidden'));
+    document.getElementById('tab-'+tab).classList.remove('hidden');
+  });
+});
+
+// ===== 复制代码 =====
+function copyCode(btn){
+  const pre=btn.nextElementSibling;
+  const text=pre.textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const orig=btn.textContent;
+    btn.textContent='已复制';
+    btn.style.color='#4ade80';
+    setTimeout(()=>{
+      btn.textContent=orig;
+      btn.style.color='';
+    },2000);
+  });
+}
+
+// ===== 鼠标跟随光晕 =====
+const cursorGlow=document.getElementById('cursorGlow');
+let glowTimeout;
+document.addEventListener('mousemove',(e)=>{
+  cursorGlow.style.left=e.clientX+'px';
+  cursorGlow.style.top=e.clientY+'px';
+  cursorGlow.style.opacity='1';
+  clearTimeout(glowTimeout);
+  glowTimeout=setTimeout(()=>cursorGlow.style.opacity='0',100);
+});
+
+// ===== Lucide Icons 初始化 =====
+lucide.createIcons();
+</script>
 </body>
 </html>
