@@ -45,10 +45,10 @@
   "author":{"@type":"Organization","name":"武汉晴辰天下网络科技有限公司","url":"https://qingchencloud.com"},
   "sourceOrganization":{"@type":"Organization","name":"QingchenCloud","url":"https://qingchencloud.com"}
 }</script>
-<!-- Tailwind CSS CDN -->
-<script src="https://cdn.tailwindcss.com"></script>
-<!-- Lucide Icons CDN -->
-<script src="https://unpkg.com/lucide@latest"></script>
+<!-- Tailwind CSS v3 CDN (Cloudflare 缓存) -->
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<!-- Lucide Icons (jsdelivr, 固定版本, 有缓存) -->
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
 <script>
 tailwind.config={
   darkMode:'class',
@@ -166,6 +166,7 @@ html:not(.dark) .deco-shape{border-color:rgba(233,69,96,.08)}
 .conic-btn::after{content:'';position:absolute;inset:2px;z-index:-1;border-radius:inherit;background:var(--bg)}
 html:not(.dark) .conic-btn{color:#18181b}
 html:not(.dark) .conic-btn::after{background:#fff}
+html:not(.dark) .logo-bg{fill:#e8e8ec}
 @keyframes conicSpin{to{--conic-angle:360deg}}
 @property --conic-angle{syntax:'<angle>';initial-value:0deg;inherits:false}
 
@@ -255,7 +256,7 @@ html:not(.dark) .conic-btn::after{background:#fafafa}
 <!-- ===== 顶部导航 ===== -->
 <nav id="topnav" class="fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-6 border-b transition-all duration-300" style="backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-color:var(--border)">
   <a href="#" class="flex items-center gap-2.5 font-bold text-lg" style="color:var(--txt)">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" class="w-8 h-8"><rect width="64" height="64" rx="14" fill="#0d0d1a"/><path d="M32 12C20.954 12 12 20.954 12 32s8.954 20 20 20c2.5 0 4.9-.46 7.1-1.3L48 54l-1.3-8.9A19.9 19.9 0 0052 32c0-11.046-8.954-20-20-20z" stroke="#e94560" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="24" cy="32" r="3" fill="#e94560"/><circle cx="32" cy="32" r="3" fill="#e94560"/><circle cx="40" cy="32" r="3" fill="#e94560"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" class="w-8 h-8"><rect class="logo-bg" width="64" height="64" rx="14" fill="#0d0d1a"/><path d="M32 12C20.954 12 12 20.954 12 32s8.954 20 20 20c2.5 0 4.9-.46 7.1-1.3L48 54l-1.3-8.9A19.9 19.9 0 0052 32c0-11.046-8.954-20-20-20z" stroke="#e94560" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="24" cy="32" r="3" fill="#e94560"/><circle cx="32" cy="32" r="3" fill="#e94560"/><circle cx="40" cy="32" r="3" fill="#e94560"/></svg>
     ClawApp
   </a>
   <!-- 桌面端链接 -->
@@ -308,7 +309,7 @@ html:not(.dark) .conic-btn::after{background:#fafafa}
     <div class="float-slow mb-8 inline-block">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" class="w-24 h-24 mx-auto" style="filter:drop-shadow(0 0 40px rgba(233,69,96,.35))">
         <defs><linearGradient id="hg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#e94560"/><stop offset="100%" stop-color="#7b2ff7"/></linearGradient></defs>
-        <rect width="64" height="64" rx="14" fill="#0d0d1a"/>
+        <rect class="logo-bg" width="64" height="64" rx="14" fill="#0d0d1a"/>
         <path d="M32 12C20.954 12 12 20.954 12 32s8.954 20 20 20c2.5 0 4.9-.46 7.1-1.3L48 54l-1.3-8.9A19.9 19.9 0 0052 32c0-11.046-8.954-20-20-20z" stroke="url(#hg)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
         <circle cx="24" cy="32" r="3" fill="#e94560"/><circle cx="32" cy="32" r="3" fill="#e94560"/><circle cx="40" cy="32" r="3" fill="#e94560"/>
       </svg>
