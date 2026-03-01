@@ -14,6 +14,7 @@ let _textarea = null
 let _sendBtn = null
 let _previewBar = null
 let _sessionKey = ''
+let _serverSessionKey = ''
 let _isStreaming = false
 let _isSending = false     // chat.send 请求中
 let _messageQueue = []     // 消息队列（发送中时排队）
@@ -31,8 +32,10 @@ let _unsubEvent = null
 let _seenFinalRunIds = new Set()
 let _lastFinalSig = ''
 let _lastFinalAt = 0
+let _lastReconnectNoticeAt = 0
 const RENDER_THROTTLE = 30 // 渲染节流间隔 ms
 const FINAL_DUP_WINDOW_MS = 5000
+const RECONNECT_NOTICE_COOLDOWN_MS = 5000
 
 const SVG_SEND = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>`
 const SVG_ATTACH = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>`
@@ -100,13 +103,16 @@ export function createChatPage() {
 }
 
 export function setSessionKey(key) {
-  // 优先恢复上次使用的会话
-  const saved = localStorage.getItem(STORAGE_SESSION_KEY)
-  if (saved && saved !== key) {
-    _sessionKey = saved
-  } else {
-    _sessionKey = key
+  // 记录服务端默认会话，但不要在重连时覆盖用户当前会话
+  _serverSessionKey = key || ''
+
+  // 仅在首次初始化（当前无会话）时设置 active session
+  if (!_sessionKey) {
+    const saved = localStorage.getItem(STORAGE_SESSION_KEY)
+    _sessionKey = saved || _serverSessionKey || ''
+    if (_sessionKey) localStorage.setItem(STORAGE_SESSION_KEY, _sessionKey)
   }
+
   updateSessionTitle()
 }
 export function getSessionKey() { return _sessionKey }
@@ -166,6 +172,7 @@ export function initChatUI(onSettings) {
     } else if (status === 'connecting' || status === 'reconnecting') {
       dot.classList.add('connecting')
       showDisconnectBanner(true)
+      notifyReconnectingSession()
     } else if (status === 'disconnected') {
       showDisconnectBanner(false)
     }
@@ -198,8 +205,8 @@ function toggleVoiceInput(SR) {
     micBtn.classList.remove('recording')
     _recognition = null
     console.error('[voice] error:', e.error)
-    if (e.error === 'not-allowed') appendSystemMessage('请允许麦克风权限后重试')
-    else if (e.error === 'network') appendSystemMessage('语音服务不可用（需要网络连接 Google 服务）')
+    if (e.error === 'not-allowed') appendSystemMessage(t('voice.need.permission'))
+    else if (e.error === 'network') appendSystemMessage(t('voice.service.unavailable'))
     else if (e.error !== 'aborted' && e.error !== 'no-speech') appendSystemMessage(`${t('voice.error')} (${e.error})`)
   }
   _recognition.start()
@@ -224,6 +231,27 @@ function updateSendState() {
   }
 }
 
+function isSessionMissingError(message) {
+  return /会话不存在|session\s+not\s+found/i.test(String(message || ''))
+}
+
+function notifyReconnectingSession() {
+  const now = Date.now()
+  if (now - _lastReconnectNoticeAt < RECONNECT_NOTICE_COOLDOWN_MS) return
+  _lastReconnectNoticeAt = now
+  appendSystemMessage(`${t('chat.send.error')}: ${t('chat.reconnecting')}`)
+}
+
+function fallbackToDefaultSessionWithNotice() {
+  const fallback = _serverSessionKey || wsClient.snapshot?.sessionDefaults?.mainSessionKey || 'agent:main:main'
+  if (!fallback || fallback === _sessionKey) {
+    appendSystemMessage(`${t('chat.send.error')}: ${t('chat.session.missing.manual')}`)
+    return
+  }
+  appendSystemMessage(`${t('chat.send.error')}: ${t('chat.session.missing.fallback')}`)
+  switchSession(fallback)
+}
+
 function handleSendClick() {
   if (_isStreaming) {
     wsClient.chatAbort(_sessionKey, _currentRunId).catch(() => {})
@@ -244,8 +272,19 @@ async function sendMessage() {
 
   // 如果正在发送或流式响应中，加入队列
   if (_isSending || _isStreaming) {
+    if (text) {
+      appendUserMessage(text, attachments)
+      saveMessage({
+        id: uuid(),
+        sessionKey: _sessionKey,
+        role: 'user',
+        content: text,
+        attachments: attachments?.length ? attachments : undefined,
+        timestamp: Date.now()
+      })
+    }
     _messageQueue.push({ text, attachments })
-    // 不再这里 append，等发送时统一处理
+    // 已在入队时 append，发送时不要重复渲染
     return
   }
 
@@ -268,6 +307,10 @@ async function doSend(text, attachments) {
     await wsClient.chatSend(_sessionKey, text, attachments.length ? attachments : undefined)
   } catch (err) {
     showTyping(false)
+    if (isSessionMissingError(err.message)) {
+      fallbackToDefaultSessionWithNotice()
+      return
+    }
     if (err.message.includes('未连接') || err.message.includes('超时') || err.message.includes('重连') || err.message.includes('timeout') || err.message.includes('reconnect')) {
       appendSystemMessage(t('chat.reconnecting'))
     } else {
@@ -292,6 +335,10 @@ function processMessageQueue() {
   wsClient.chatSend(_sessionKey, next.text, next.attachments?.length ? next.attachments : undefined)
     .catch(err => {
       showTyping(false)
+      if (isSessionMissingError(err.message)) {
+        fallbackToDefaultSessionWithNotice()
+        return
+      }
       appendSystemMessage(`${t('chat.send.error')}: ${err.message}`)
     })
     .finally(() => {
@@ -414,7 +461,7 @@ function handleChatEvent(payload) {
   }
 
   if (state === 'error') {
-    const errMsg = payload.errorMessage || '未知错误'
+    const errMsg = payload.errorMessage || t('chat.error.unknown')
     // 流式进行中（lifecycle start 已触发），Gateway 可能自动重试
     if (_isStreaming) {
       console.warn('[chat] 流式中临时错误，等待 Gateway 重试:', errMsg)
@@ -423,7 +470,7 @@ function handleChatEvent(payload) {
     }
     // 非流式状态，终态错误
     showTyping(false)
-    appendSystemMessage(`错误: ${errMsg}`)
+    appendSystemMessage(`${t('chat.error.prefix')}: ${errMsg}`)
     resetStreamState()
     processMessageQueue()
     return
@@ -773,6 +820,15 @@ export async function loadHistory() {
     if (hash === _lastHistoryHash && hasExisting) return
     _lastHistoryHash = hash
 
+    // 有待发送/发送中的本地消息时，不要全量重绘，避免覆盖本地乐观渲染
+    if (hasExisting && (_isSending || _isStreaming || _messageQueue.length > 0)) {
+      saveMessages(result.messages.map(m => {
+        const c = extractContent(m)
+        return { id: m.id || uuid(), sessionKey: _sessionKey, role: m.role, content: c?.text || '', timestamp: m.timestamp || Date.now() }
+      }))
+      return
+    }
+
     clearMessages()
     deduped.forEach(msg => {
       const msgTime = msg.timestamp ? new Date(msg.timestamp) : new Date()
@@ -789,6 +845,10 @@ export async function loadHistory() {
     scrollToBottom()
   } catch (e) {
     console.error('[chat] loadHistory error:', e)
+    if (isSessionMissingError(e.message)) {
+      fallbackToDefaultSessionWithNotice()
+      return
+    }
     if (!_messagesEl.querySelector('.msg')) appendSystemMessage(`${t('chat.load.error')}: ${e.message}`)
   }
 }
@@ -860,12 +920,12 @@ async function showSessionPicker() {
     <div class="cmd-panel-header">
       <h3>${t('session.title')}</h3>
       <div style="display:flex;gap:8px;align-items:center">
-        <button class="session-action-btn" id="session-new-btn" title="新建会话">＋</button>
+        <button class="session-action-btn" id="session-new-btn" title="${t('session.new')}">＋</button>
         <button class="close-btn">×</button>
       </div>
     </div>
     <div class="session-list cmd-list">
-      <div class="session-loading">加载中...</div>
+      <div class="session-loading">${t('session.loading')}</div>
     </div>
   `
   panel.querySelector('.close-btn').onclick = () => closeSessionPicker()
@@ -921,7 +981,7 @@ async function refreshSessionList() {
         </div>
         ${timeStr ? `<div class="cmd-desc" style="flex-shrink:0">${timeStr}</div>` : ''}
         ${isActive ? '<div style="color:var(--success);flex-shrink:0">●</div>' : ''}
-        <button class="session-delete-btn" title="删除会话">✕</button>
+        <button class="session-delete-btn" title="${t('session.delete')}">✕</button>
       `
 
       // 点击切换会话
