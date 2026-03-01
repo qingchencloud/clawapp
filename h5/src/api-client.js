@@ -55,6 +55,7 @@ export class WsClient {
     this._esId = 0           // 区分新旧 EventSource 实例
     this._lastSseEventId = 0
     this._recentEventHashes = new Map()
+    this._sessionRecoverPromise = null
   }
 
   get connected() { return this._connected }
@@ -230,8 +231,41 @@ export class WsClient {
     this.connect(this._host, this._token)
   }
 
+  _waitReady(timeoutMs = 15000) {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => {
+        unsub()
+        reject(new Error('等待重连超时'))
+      }, timeoutMs)
+
+      const unsub = this.onReady((hello, sessionKey, meta) => {
+        clearTimeout(timer)
+        unsub()
+        if (meta?.error) {
+          reject(new Error(meta.message || '连接失败'))
+          return
+        }
+        resolve({ hello, sessionKey })
+      })
+    })
+  }
+
+  _recoverSession() {
+    if (this._sessionRecoverPromise) return this._sessionRecoverPromise
+    if (!this._host || !this._token) return Promise.reject(new Error('未连接'))
+
+    this._sessionRecoverPromise = (async () => {
+      this.reconnect()
+      await this._waitReady(15000)
+    })().finally(() => {
+      this._sessionRecoverPromise = null
+    })
+
+    return this._sessionRecoverPromise
+  }
+
   /** 发送 RPC 请求 */
-  async request(method, params = {}) {
+  async request(method, params = {}, hasRetriedAfterSessionMissing = false) {
     if (!this._sid || !this._gatewayReady) {
       // 等待重连就绪后重试
       if (!this._intentionalClose && this._reconnectAttempts > 0) {
@@ -262,7 +296,22 @@ export class WsClient {
       })
       clearTimeout(timer)
       const data = await res.json()
-      if (!data.ok) throw new Error(data.error || '请求失败')
+      if (!data.ok) {
+        const message = data.error || '请求失败'
+        const isSessionMissing = res.status === 404 && /会话不存在|session\s+not\s+found/i.test(message)
+        if (
+          isSessionMissing &&
+          !hasRetriedAfterSessionMissing &&
+          !this._intentionalClose &&
+          this._host &&
+          this._token
+        ) {
+          console.warn('[api] 会话不存在，尝试自动重连并重试请求:', method)
+          await this._recoverSession()
+          return this.request(method, params, true)
+        }
+        throw new Error(message)
+      }
       return data.payload
     } catch (e) {
       clearTimeout(timer)
