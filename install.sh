@@ -74,7 +74,7 @@ install_node() {
   echo "  2) 我自己安装 (退出脚本)"
   echo ""
   ask "请选择 [1/2]: "
-  read -r choice
+  read -r choice < /dev/tty
   echo ""
 
   case "$choice" in
@@ -215,7 +215,7 @@ offer_install_openclaw() {
     echo "  2) 跳过，我稍后自己安装"
     echo ""
     ask "请选择 [1/2]: "
-    read -r choice
+    read -r choice < /dev/tty
     echo ""
 
     if [ "$choice" = "1" ]; then
@@ -273,7 +273,7 @@ configure() {
 
   # Proxy Token
   ask "设置客户端连接密码 (PROXY_TOKEN，直接回车生成随机密码): "
-  read -r input_proxy_token
+  read -r input_proxy_token < /dev/tty
   if [ -z "$input_proxy_token" ]; then
     PROXY_TOKEN=$(openssl rand -hex 16 2>/dev/null || node -e "process.stdout.write(require('crypto').randomBytes(16).toString('hex'))")
     info "已生成随机密码: $PROXY_TOKEN"
@@ -284,13 +284,13 @@ configure() {
   # Gateway Token
   if [ -n "$GATEWAY_TOKEN" ]; then
     ask "Gateway Token (已自动检测，直接回车使用，或输入新的): "
-    read -r input_gw_token
+    read -r input_gw_token < /dev/tty
     if [ -n "$input_gw_token" ]; then
       GATEWAY_TOKEN="$input_gw_token"
     fi
   else
     ask "Gateway Token (在 ~/.openclaw/openclaw.json 中查找): "
-    read -r GATEWAY_TOKEN
+    read -r GATEWAY_TOKEN < /dev/tty
     if [ -z "$GATEWAY_TOKEN" ]; then
       err "Gateway Token 不能为空"
       exit 1
@@ -299,14 +299,14 @@ configure() {
 
   # Gateway URL
   ask "Gateway 地址 (直接回车使用 $GATEWAY_URL): "
-  read -r input_gw_url
+  read -r input_gw_url < /dev/tty
   if [ -n "$input_gw_url" ]; then
     GATEWAY_URL="$input_gw_url"
   fi
 
   # 端口
   ask "服务端口 (直接回车使用 3210): "
-  read -r input_port
+  read -r input_port < /dev/tty
   PROXY_PORT="${input_port:-3210}"
 
   # 写入 .env
@@ -330,7 +330,7 @@ start_server() {
   echo "  3) 不启动，稍后手动启动"
   echo ""
   ask "请选择 [1/2/3]: "
-  read -r choice
+  read -r choice < /dev/tty
   echo ""
 
   case "$choice" in
@@ -413,7 +413,7 @@ main() {
   echo ""
   info "安装目录: $INSTALL_DIR"
   ask "确认开始安装？[Y/n]: "
-  read -r confirm
+  read -r confirm < /dev/tty
   if [ "$confirm" = "n" ] || [ "$confirm" = "N" ]; then
     info "已取消"
     exit 0

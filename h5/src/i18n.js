@@ -108,6 +108,7 @@ const messages = {
     'settings.layout.compact': '紧凑',
     'settings.layout.auto': '自适应',
     'settings.layout.wide': '宽屏',
+    'settings.reload': '重新加载页面',
     'settings.disconnect': '断开连接',
     // 关于
     'about.title': '关于 ClawApp',
@@ -250,6 +251,7 @@ const messages = {
     'settings.layout.compact': 'Compact',
     'settings.layout.auto': 'Auto',
     'settings.layout.wide': 'Wide',
+    'settings.reload': 'Reload Page',
     'settings.disconnect': 'Disconnect',
     // 关于
     'about.title': 'About ClawApp',
