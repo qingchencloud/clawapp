@@ -9,8 +9,8 @@ const messages = {
     // 连接页
     'app.title': 'ClawApp',
     'app.subtitle': '连接到你的 OpenClaw 智能体',
-    'setup.host': '服务器地址',
-    'setup.host.placeholder': '例如: 192.168.1.100:3210',
+    'setup.host': 'ClawApp 服务器地址',
+    'setup.host.placeholder': 'ClawApp 地址，如 192.168.1.100:3210',
     'setup.token': 'Token',
     'setup.token.placeholder': '输入访问令牌',
     'setup.connect': '连接',
@@ -178,8 +178,8 @@ const messages = {
   'en': {
     'app.title': 'ClawApp',
     'app.subtitle': 'Connect to your OpenClaw agent',
-    'setup.host': 'Server Address',
-    'setup.host.placeholder': 'e.g. 192.168.1.100:3210',
+    'setup.host': 'ClawApp Server Address',
+    'setup.host.placeholder': 'ClawApp address, e.g. 192.168.1.100:3210',
     'setup.token': 'Token',
     'setup.token.placeholder': 'Enter access token',
     'setup.connect': 'Connect',

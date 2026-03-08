@@ -226,6 +226,7 @@ function sseWrite(session, event, data) {
   // 如果 SSE 连接存在，立即推送
   if (session.sseRes && !session.sseRes.writableEnded) {
     session.sseRes.write(`id: ${entry.id}\nevent: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+    if (typeof session.sseRes.flush === 'function') session.sseRes.flush();
   }
 }
 
@@ -926,14 +927,21 @@ app.get('/api/events', (req, res) => {
     return res.status(404).json({ ok: false, error: '会话不存在' });
   }
 
-  // SSE 响应头
+  // SSE 响应头（防止代理/Tunnel 缓冲）
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
+    'Cache-Control': 'no-cache, no-transform',
     'Connection': 'keep-alive',
     'X-Accel-Buffering': 'no',
+    'Content-Encoding': 'none',
   });
   res.flushHeaders();
+
+  // 禁用 TCP Nagle 算法，确保小数据包立即发送
+  if (req.socket) req.socket.setNoDelay(true);
+
+  // 发送填充注释，触发代理/CDN 刷新初始缓冲区
+  res.write(`: padding ${' '.repeat(2048)}\n\n`);
 
   // 关闭旧 SSE 连接（如果有）
   if (session.sseRes && !session.sseRes.writableEnded) {
@@ -958,17 +966,20 @@ app.get('/api/events', (req, res) => {
     const missed = session.eventBuffer.filter(e => e.id > lastId);
     for (const entry of missed) {
       res.write(`id: ${entry.id}\nevent: ${entry.event}\ndata: ${JSON.stringify(entry.data)}\n\n`);
+      if (typeof res.flush === 'function') res.flush();
     }
     log.info(`SSE 续传 [${sid}] 补发 ${missed.length} 条事件 (from id=${lastId})`);
   }
 
   // 发送连接确认事件
   res.write(`event: proxy.ready\ndata: ${JSON.stringify({ sid, state: session.state })}\n\n`);
+  if (typeof res.flush === 'function') res.flush();
 
   // SSE 心跳（防止代理/CDN 超时）
   session._sseHeartbeat = setInterval(() => {
     if (!res.writableEnded) {
       res.write(': heartbeat\n\n');
+      if (typeof res.flush === 'function') res.flush();
     }
   }, SSE_HEARTBEAT_INTERVAL);
 
