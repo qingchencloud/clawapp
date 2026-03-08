@@ -911,6 +911,8 @@ app.post('/api/connect', async (req, res) => {
       userError = '连接超时，请检查 OpenClaw 是否正在运行';
     } else if (/握手失败/.test(userError)) {
       userError = 'Gateway 认证失败，请检查 server/.env 中的 OPENCLAW_GATEWAY_TOKEN 配置';
+    } else if (/too many.*auth|频率限制/.test(userError)) {
+      userError = '认证尝试过于频繁，请等待几分钟后再试';
     }
     res.status(502).json({ ok: false, error: userError });
   }
