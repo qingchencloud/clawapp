@@ -23,7 +23,6 @@ const __dirname = dirname(__filename);
 const ENV_PATH = join(__dirname, '.env');
 
 // 自动创建 .env（首次启动时生成临时密码，等待用户设置）
-let _isFirstRun = false;
 if (!existsSync(ENV_PATH)) {
   const tmpToken = randomBytes(12).toString('base64url');
   const content = [
@@ -33,6 +32,9 @@ if (!existsSync(ENV_PATH)) {
     '# H5 客户端连接密码（登录时填写的 Token）',
     `PROXY_TOKEN=${tmpToken}`,
     '',
+    '# 首次运行标记（用户设置密码后自动移除）',
+    'SETUP_PENDING=true',
+    '',
     '# OpenClaw Gateway 地址',
     'OPENCLAW_GATEWAY_URL=ws://127.0.0.1:18789',
     '',
@@ -41,14 +43,16 @@ if (!existsSync(ENV_PATH)) {
     '',
   ].join('\n');
   writeFileSync(ENV_PATH, content, 'utf8');
-  _isFirstRun = true;
   console.log('[INFO] 首次启动，已创建配置文件，等待用户设置连接密码...');
 }
 
 // 加载环境变量
 config({ path: ENV_PATH });
 
-/** 更新 .env 中的 PROXY_TOKEN */
+/** 检查是否首次运行（持久化标记） */
+let _isFirstRun = process.env.SETUP_PENDING === 'true';
+
+/** 更新 .env 中的 PROXY_TOKEN 并清除首次运行标记 */
 function updateEnvToken(newToken) {
   let content = readFileSync(ENV_PATH, 'utf8');
   if (/^PROXY_TOKEN=.*/m.test(content)) {
@@ -56,6 +60,9 @@ function updateEnvToken(newToken) {
   } else {
     content += `\nPROXY_TOKEN=${newToken}\n`;
   }
+  // 移除首次运行标记
+  content = content.replace(/^SETUP_PENDING=.*\n?/m, '');
+  content = content.replace(/^# 首次运行标记.*\n?/m, '');
   writeFileSync(ENV_PATH, content, 'utf8');
   CONFIG.proxyToken = newToken;
 }
