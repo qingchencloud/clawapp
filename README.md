@@ -207,6 +207,12 @@ pm2 start server/index.js --name clawapp
 pm2 save && pm2 startup
 ```
 
+### GitHub Pages 部署（仅前端）
+
+项目自带 GitHub Actions 工作流（`.github/workflows/deploy-pages.yml`），push 到 `main` 分支后会自动将 H5 前端部署到 GitHub Pages。
+
+> ⚠️ **注意：** ClawApp 是前后端一体应用，GitHub Pages 只能托管 H5 静态前端。用户**仍需自行部署 server 端**（WebSocket 代理服务）才能实际使用聊天功能。Pages 上的前端页面需要连接到一个运行中的 ClawApp Server，参见上方的部署方式。
+
 ---
 
 <h2 id="remote">外网访问</h2>
