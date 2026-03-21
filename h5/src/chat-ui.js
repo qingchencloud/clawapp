@@ -1007,7 +1007,12 @@ function appendFilesToEl(el, files) {
     card.innerHTML = `<span class="msg-file-icon">${icon}</span><div class="msg-file-info"><span class="msg-file-name">${escapeText(f.name || '文件')}</span>${size ? `<span class="msg-file-size">${size}</span>` : ''}</div>`
     if (f.url) {
       card.style.cursor = 'pointer'
-      card.onclick = () => window.open(f.url, '_blank')
+      card.onclick = () => {
+        const url = (f.url.includes('/media?') && !/[?&]download=1(?:&|$)/.test(f.url))
+          ? `${f.url}${f.url.includes('?') ? '&' : '?'}download=1`
+          : f.url
+        window.open(url, '_blank')
+      }
     } else if (f.data) {
       card.style.cursor = 'pointer'
       card.onclick = () => {

@@ -120,18 +120,20 @@ export function renderMarkdown(text) {
 
   let output = result.join('\n')
   // MEDIA: 路径替换为音频/视频/文件播放器
-  output = output.replace(/MEDIA:(\/[^\s<"]+)/g, (_, path) => {
-    const src = `/media?path=${encodeURIComponent(path)}`
-    if (/\.(mp3|wav|ogg|m4a|aac|flac|opus|wma)$/i.test(path)) {
+  output = output.replace(/MEDIA:(\/[^\n<"]+)/g, (_, path) => {
+    const mediaPath = path.replace(/\s+$/, '')
+    const src = `/media?path=${encodeURIComponent(mediaPath)}`
+    const downloadSrc = `${src}&download=1`
+    if (/\.(mp3|wav|ogg|m4a|aac|flac|opus|wma)$/i.test(mediaPath)) {
       return `<div class="voice-bubble" data-src="${src}"><span class="voice-icon">&#9654;</span><span class="voice-bar"></span><span class="voice-dur">0″</span></div>`
     }
-    if (/\.(mp4|mov|webm|mkv|avi|flv)$/i.test(path)) return `<div class="msg-video-wrap"><video controls preload="metadata" playsinline src="${src}" class="msg-video"></video></div>`
-    if (/\.(jpe?g|png|gif|webp|heic|svg)$/i.test(path)) return `<img src="${src}" alt="${escapeHtml(path.split('/').pop())}" class="msg-img" />`
-    const fileName = escapeHtml(path.split('/').pop())
-    const ext = path.split('.').pop().toLowerCase()
+    if (/\.(mp4|mov|webm|mkv|avi|flv)$/i.test(mediaPath)) return `<div class="msg-video-wrap"><video controls preload="metadata" playsinline src="${src}" class="msg-video"></video></div>`
+    if (/\.(jpe?g|png|gif|webp|heic|svg)$/i.test(mediaPath)) return `<img src="${src}" alt="${escapeHtml(mediaPath.split('/').pop())}" class="msg-img" />`
+    const fileName = escapeHtml(mediaPath.split('/').pop())
+    const ext = mediaPath.split('.').pop().toLowerCase()
     const iconMap = { pdf: '📄', doc: '📝', docx: '📝', txt: '📃', md: '📃', json: '📋', csv: '📊', zip: '📦', rar: '📦' }
     const icon = iconMap[ext] || '📎'
-    return `<div class="msg-file-card" onclick="window.open('${src}','_blank')"><span class="msg-file-icon">${icon}</span><div class="msg-file-info"><span class="msg-file-name">${fileName}</span></div></div>`
+    return `<div class="msg-file-card" onclick="window.open('${downloadSrc}','_blank')"><span class="msg-file-icon">${icon}</span><div class="msg-file-info"><span class="msg-file-name">${fileName}</span></div></div>`
   })
   return output
 }

@@ -416,8 +416,15 @@ OPENCLAW_GATEWAY_PASSWORD=你的-gateway-password
 | `OPENCLAW_GATEWAY_URL` | 否 | `ws://127.0.0.1:18789` | Gateway 地址（Docker 下自动设为 `host.docker.internal`） |
 | `OPENCLAW_GATEWAY_TOKEN` | 二选一 | - | Gateway 认证 token |
 | `OPENCLAW_GATEWAY_PASSWORD` | 二选一 | - | Gateway 密码认证（Tailscale Funnel 场景，优先级高于 token） |
+| `MEDIA_ALLOWED_DIRS` | 否 | - | 允许通过 `/media` 访问的额外目录，逗号分隔。默认已允许 `/tmp/` 和 `/var/folders/` |
 | `MEDIA_ALLOW_ALL` | 否 | `0` | 设为 `1` 允许访问任意路径的媒体文件（默认仅 `/tmp/` 和 `/var/folders/`） |
 | `ALLOWED_ORIGINS` | 否 | - | 额外 CORS 白名单，逗号分隔 |
+
+例如要允许 OpenClaw 的 workspace 目录被手机下载：
+
+```env
+MEDIA_ALLOWED_DIRS=~/.openclaw/workspace
+```
 
 ---
 
