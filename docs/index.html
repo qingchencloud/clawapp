@@ -868,7 +868,9 @@ tabBtns.forEach(btn=>{
 
 // ===== 复制代码 =====
 function copyCode(btn){
-  const pre=btn.nextElementSibling;
+  const container=btn.parentElement;
+  const pre=container.querySelector('pre:not(.hidden)');
+  if(!pre)return;
   const text=pre.textContent;
   navigator.clipboard.writeText(text).then(()=>{
     const orig=btn.textContent;

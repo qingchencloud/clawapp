@@ -120,7 +120,8 @@ export function renderMarkdown(text) {
 
   let output = result.join('\n')
   // MEDIA: 路径替换为音频/视频/文件播放器
-  output = output.replace(/MEDIA:(\/[^\s<"]+)/g, (_, path) => {
+  output = output.replace(/MEDIA:(\/[^\n<"]+)/g, (_, rawPath) => {
+    const path = rawPath.trim()
     const src = `/media?path=${encodeURIComponent(path)}`
     if (/\.(mp3|wav|ogg|m4a|aac|flac|opus|wma)$/i.test(path)) {
       return `<div class="voice-bubble" data-src="${src}"><span class="voice-icon">&#9654;</span><span class="voice-bar"></span><span class="voice-dur">0″</span></div>`
@@ -131,7 +132,8 @@ export function renderMarkdown(text) {
     const ext = path.split('.').pop().toLowerCase()
     const iconMap = { pdf: '📄', doc: '📝', docx: '📝', txt: '📃', md: '📃', json: '📋', csv: '📊', zip: '📦', rar: '📦' }
     const icon = iconMap[ext] || '📎'
-    return `<div class="msg-file-card" onclick="window.open('${src}','_blank')"><span class="msg-file-icon">${icon}</span><div class="msg-file-info"><span class="msg-file-name">${fileName}</span></div></div>`
+    const dlSrc = `${src}&download=1`
+    return `<div class="msg-file-card" onclick="window.open('${dlSrc}','_blank')"><span class="msg-file-icon">${icon}</span><div class="msg-file-info"><span class="msg-file-name">${fileName}</span></div></div>`
   })
   return output
 }

@@ -14,9 +14,9 @@ import express from 'express';
 import { createServer } from 'http';
 import { WebSocket } from 'ws';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { dirname, join, resolve, sep, basename, extname } from 'path';
 import { randomUUID, randomBytes, generateKeyPairSync, createHash, sign as ed25519Sign, createPrivateKey } from 'crypto';
-import { readFileSync, writeFileSync, existsSync, createReadStream, statSync } from 'fs';
+import { readFileSync, writeFileSync, existsSync, createReadStream, statSync, realpathSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -68,6 +68,59 @@ function updateEnvToken(newToken) {
 }
 
 // 配置
+const DEFAULT_MEDIA_ALLOWED_DIRS = ['/tmp', '/var/folders'];
+
+function expandHomePath(value) {
+  const str = String(value || '').trim();
+  if (!str) return '';
+  if (str === '~') return process.env.HOME || str;
+  if (str.startsWith('~/')) return join(process.env.HOME || '', str.slice(2));
+  return str;
+}
+
+function normalizePathForCompare(value, { mustExist = false } = {}) {
+  const expanded = expandHomePath(value);
+  if (!expanded) return '';
+  try {
+    if (existsSync(expanded)) {
+      return realpathSync(expanded);
+    }
+  } catch {}
+  if (mustExist) return '';
+  return resolve(expanded);
+}
+
+function parseAllowedMediaDirs(value) {
+  return String(value || '')
+    .split(',')
+    .map(part => normalizePathForCompare(part))
+    .filter(Boolean);
+}
+
+function isPathInsideDir(targetPath, dirPath) {
+  if (!targetPath || !dirPath) return false;
+  return targetPath === dirPath || targetPath.startsWith(dirPath.endsWith(sep) ? dirPath : `${dirPath}${sep}`);
+}
+
+function buildContentDisposition(filename) {
+  const originalName = String(filename || 'download')
+    .replace(/[\r\n"]/g, '_')
+    .trim() || 'download';
+  const extension = extname(originalName);
+  const baseName = originalName.slice(0, originalName.length - extension.length) || 'download';
+  const asciiBaseName = baseName
+    .normalize('NFKD')
+    .replace(/[^\x20-\x7E]+/g, '_')
+    .replace(/[%;\\]/g, '_')
+    .trim() || 'download';
+  const asciiExtension = extension
+    .normalize('NFKD')
+    .replace(/[^\x20-\x7E]+/g, '')
+    .replace(/[%;\\]/g, '') || '';
+  const fallbackName = `${asciiBaseName}${asciiExtension}` || 'download';
+  return `attachment; filename="${fallbackName}"; filename*=UTF-8''${encodeURIComponent(originalName)}`;
+}
+
 const CONFIG = {
   port: parseInt(process.env.PROXY_PORT, 10) || 3210,
   proxyToken: process.env.PROXY_TOKEN || '',
@@ -75,6 +128,10 @@ const CONFIG = {
   gatewayToken: process.env.OPENCLAW_GATEWAY_TOKEN || '',
   gatewayPassword: process.env.OPENCLAW_GATEWAY_PASSWORD || '',
   mediaAllowAll: process.env.MEDIA_ALLOW_ALL === '1',
+  mediaAllowedDirs: [
+    ...DEFAULT_MEDIA_ALLOWED_DIRS.map(dir => normalizePathForCompare(dir, { mustExist: false })),
+    ...parseAllowedMediaDirs(process.env.MEDIA_ALLOWED_DIRS),
+  ],
   h5DistPath: join(__dirname, '../h5/dist'),
 };
 
@@ -753,9 +810,13 @@ app.get('/health', (req, res) => {
 app.get('/media', (req, res) => {
   const filePath = req.query.path;
   if (!filePath || !existsSync(filePath)) return res.status(404).send('Not Found');
-  if (!CONFIG.mediaAllowAll && !filePath.startsWith('/tmp/') && !filePath.startsWith('/var/folders/')) return res.status(403).send('Forbidden');
-  const stat = statSync(filePath);
-  const ext = filePath.split('.').pop().toLowerCase();
+  const resolvedFilePath = normalizePathForCompare(filePath, { mustExist: true });
+  if (!resolvedFilePath) return res.status(404).send('Not Found');
+  if (!CONFIG.mediaAllowAll && !CONFIG.mediaAllowedDirs.some(dir => isPathInsideDir(resolvedFilePath, dir))) {
+    return res.status(403).send('Forbidden');
+  }
+  const stat = statSync(resolvedFilePath);
+  const ext = resolvedFilePath.split('.').pop().toLowerCase();
   const mime = {
     // 音频
     mp3: 'audio/mpeg', wav: 'audio/wav', ogg: 'audio/ogg', m4a: 'audio/mp4',
@@ -774,8 +835,16 @@ app.get('/media', (req, res) => {
     zip: 'application/zip', rar: 'application/x-rar-compressed',
     '7z': 'application/x-7z-compressed', tar: 'application/x-tar', gz: 'application/gzip',
   }[ext] || 'application/octet-stream';
-  res.set({ 'Content-Type': mime, 'Content-Length': stat.size, 'Cache-Control': 'public, max-age=3600' });
-  createReadStream(filePath).pipe(res);
+  const headers = {
+    'Content-Type': mime,
+    'Content-Length': stat.size,
+    'Cache-Control': 'public, max-age=3600',
+  };
+  if (req.query.download === '1') {
+    headers['Content-Disposition'] = buildContentDisposition(basename(resolvedFilePath));
+  }
+  res.set(headers);
+  createReadStream(resolvedFilePath).pipe(res);
 });
 
 // ==================== API 路由 ====================
@@ -1164,6 +1233,11 @@ const server = createServer(app);
 server.listen(CONFIG.port, () => {
   log.info(`代理服务端已启动: http://0.0.0.0:${CONFIG.port}`);
   log.info(`架构: 手机 ←SSE+POST→ 代理服务端 ←WS→ Gateway(${CONFIG.gatewayUrl})`);
+  if (CONFIG.mediaAllowAll) {
+    log.warn('媒体文件访问已全开放 (MEDIA_ALLOW_ALL=1)');
+  } else {
+    log.info(`媒体文件允许目录: ${CONFIG.mediaAllowedDirs.join(', ')}`);
+  }
   if (_isFirstRun) {
     log.info('首次运行，请在浏览器中打开上述地址设置连接密码');
   } else if (CONFIG.proxyToken) {

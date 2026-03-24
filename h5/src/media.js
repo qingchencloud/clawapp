@@ -143,10 +143,12 @@ function renderPreviews() {
 /** 构建附件数组（发送给 Gateway） */
 export function getAttachments() {
   return _attachments.map(a => {
-    const match = /^data:([^;]+);base64,(.+)$/.exec(a.data)
+    // 兼容移动端浏览器：data URL 可能包含额外参数如 charset=utf-8
+    const match = /^data:([^;,]+)(?:;[^,]*)*;base64,(.+)$/s.exec(a.data)
     if (!match) return null
     const mimeType = match[1]
-    const content = match[2]
+    // 移动端浏览器可能在 base64 中混入换行/空格，需清理
+    const content = match[2].replace(/[\s\r\n]/g, '')
     const cat = a.category || mediaCategory(mimeType)
     // Gateway 目前只处理 image/* 附件，但我们仍然发送完整信息以便未来兼容
     return { type: cat, mimeType, content, fileName: a.name }
