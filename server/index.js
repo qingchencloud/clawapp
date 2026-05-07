@@ -153,6 +153,30 @@ const deviceKey = (() => {
 })();
 const devicePrivateKey = createPrivateKey(deviceKey.privateKeyPem);
 
+// operator 设备 deviceToken 持久化（Gateway 配对后分发的令牌，支持无共享密钥重连）
+const DEVICE_TOKEN_PATH = join(__dirname, '.device-token.json');
+function loadDeviceToken() {
+  try {
+    if (existsSync(DEVICE_TOKEN_PATH)) {
+      const data = JSON.parse(readFileSync(DEVICE_TOKEN_PATH, 'utf8'));
+      if (data?.token && typeof data.token === 'string') return data;
+    }
+  } catch {}
+  return null;
+}
+function saveDeviceToken(token, role, scopes) {
+  try {
+    writeFileSync(DEVICE_TOKEN_PATH, JSON.stringify({ token, role, scopes, savedAt: Date.now() }, null, 2));
+  } catch (e) {
+    log.warn('[auth] deviceToken 保存失败:', e.message);
+  }
+}
+function clearDeviceToken() {
+  try {
+    if (existsSync(DEVICE_TOKEN_PATH)) writeFileSync(DEVICE_TOKEN_PATH, '{}');
+  } catch {}
+}
+
 // Ed25519 Node 设备密钥（以 role:node 接受 system.notify 指令）
 const NODE_DEVICE_KEY_PATH = join(__dirname, '.node-device-key.json');
 const nodeDeviceKey = (() => {
@@ -211,25 +235,33 @@ function setSessionProgress(session, patch = {}) {
 function createConnectFrame(nonce) {
   const signedAt = Date.now();
   const credential = CONFIG.gatewayPassword || CONFIG.gatewayToken;
-  const payload = ['v2', deviceKey.deviceId, 'gateway-client', 'backend', 'operator', SCOPES.join(','), String(signedAt), credential, nonce || ''].join('|');
+  // v3 签名: 在 v2 基础上追加 platform + deviceFamily（与 OpenClaw 2026.5.x 对齐）
+  const platform = 'web';
+  const deviceFamily = 'clawapp';
+  // nonce 必须非空（NonEmptyString），且签名与 device.nonce 必须一致
+  const effectiveNonce = nonce || randomUUID();
+  const payload = ['v3', deviceKey.deviceId, 'gateway-client', 'backend', 'operator', SCOPES.join(','), String(signedAt), credential, effectiveNonce, platform, deviceFamily].join('|');
   const signature = ed25519Sign(null, Buffer.from(payload, 'utf8'), devicePrivateKey).toString('base64url');
   const auth = CONFIG.gatewayPassword
     ? { password: CONFIG.gatewayPassword }
     : { token: CONFIG.gatewayToken };
+  // 注入持久化的 deviceToken（如果有）
+  const stored = loadDeviceToken();
+  if (stored?.token) auth.deviceToken = stored.token;
   return {
     type: 'req',
     id: `connect-${randomUUID()}`,
     method: 'connect',
     params: {
       minProtocol: 3, maxProtocol: 3,
-      client: { id: 'gateway-client', version: '1.0.0', platform: 'web', mode: 'backend' },
+      client: { id: 'gateway-client', displayName: 'ClawApp', version: '2.0.0', platform, deviceFamily, mode: 'backend' },
       role: 'operator',
       scopes: SCOPES,
       caps: [],
       auth,
-      device: { id: deviceKey.deviceId, publicKey: deviceKey.publicKey, signedAt, nonce, signature },
+      device: { id: deviceKey.deviceId, publicKey: deviceKey.publicKey, signedAt, nonce: effectiveNonce, signature },
       locale: 'zh-CN',
-      userAgent: 'OpenClaw-Mobile-Proxy/1.0.0',
+      userAgent: 'ClawApp/2.0.0',
     },
   };
 }
@@ -241,7 +273,12 @@ function createConnectFrame(nonce) {
 function createNodeConnectFrame(nonce) {
   const signedAt = Date.now();
   const credential = CONFIG.gatewayPassword || CONFIG.gatewayToken;
-  const payload = ['v2', nodeDeviceKey.deviceId, 'node-host', 'node', 'node', '', String(signedAt), credential, nonce || ''].join('|');
+  // v3 签名: 在 v2 基础上追加 platform + deviceFamily（与 OpenClaw 2026.5.x 对齐）
+  const platform = process.platform;
+  const deviceFamily = 'clawapp-node';
+  // nonce 必须非空（NonEmptyString），且签名与 device.nonce 必须一致
+  const effectiveNonce = nonce || randomUUID();
+  const payload = ['v3', nodeDeviceKey.deviceId, 'node-host', 'node', 'node', '', String(signedAt), credential, effectiveNonce, platform, deviceFamily].join('|');
   const signature = ed25519Sign(null, Buffer.from(payload, 'utf8'), nodeDevicePrivateKey).toString('base64url');
   const auth = CONFIG.gatewayPassword
     ? { password: CONFIG.gatewayPassword }
@@ -252,15 +289,15 @@ function createNodeConnectFrame(nonce) {
     method: 'connect',
     params: {
       minProtocol: 3, maxProtocol: 3,
-      client: { id: 'node-host', version: '1.0.0', platform: 'linux', mode: 'node', displayName: 'ClawApp' },
+      client: { id: 'node-host', displayName: 'ClawApp Node', version: '2.0.0', platform, deviceFamily, mode: 'node' },
       role: 'node',
       scopes: [],
       caps: ['system'],
       commands: ['system.notify'],
       auth,
-      device: { id: nodeDeviceKey.deviceId, publicKey: nodeDeviceKey.publicKey, signedAt, nonce, signature },
+      device: { id: nodeDeviceKey.deviceId, publicKey: nodeDeviceKey.publicKey, signedAt, nonce: effectiveNonce, signature },
       locale: 'zh-CN',
-      userAgent: 'ClawApp-Node/1.0.0',
+      userAgent: 'ClawApp-Node/2.0.0',
     },
   };
 }
@@ -424,13 +461,31 @@ function handleUpstreamMessage(sid, rawData) {
   // connect 响应
   if (message.type === 'res' && message.id?.startsWith('connect-')) {
     if (!message.ok || message.error) {
-      log.error(`Gateway 握手失败 [${sid}]:`, message.error || '未知错误');
-      session._connectReject?.(new Error(message.error?.message || 'Gateway 握手失败'));
+      const errCode = message.error?.code || '';
+      const errMsg = message.error?.message || 'Gateway 握手失败';
+      const detailCode = message.error?.details?.code || '';
+      log.error(`Gateway 握手失败 [${sid}]: ${errMsg} (${errCode}) detail=${detailCode}`);
+      // metadata-upgrade 需要重新配对（v3 签名升级后可能触发）
+      if (detailCode === 'PAIRING_REQUIRED') {
+        log.info(`[${sid}] 需要重新配对 (reason=${message.error?.details?.reason})，等待自动审批...`);
+      }
+      // deviceToken 不匹配时清除缓存
+      if (detailCode === 'AUTH_DEVICE_TOKEN_MISMATCH') {
+        log.info(`[${sid}] deviceToken 不匹配，清除缓存`);
+        clearDeviceToken();
+      }
+      session._connectReject?.(new Error(errMsg));
     } else {
       log.info(`Gateway 握手成功 [${sid}]`);
       session.state = 'connected';
       session.hello = message.payload;
       session.snapshot = message.payload?.snapshot || null;
+      // 持久化 Gateway 返回的 deviceToken
+      const authInfo = message.payload?.auth;
+      if (authInfo?.deviceToken) {
+        saveDeviceToken(authInfo.deviceToken, authInfo.role, authInfo.scopes);
+        log.info(`[${sid}] deviceToken 已保存`);
+      }
       // 发送缓存消息
       for (const msg of session._pendingMessages) {
         if (session.upstream?.readyState === WebSocket.OPEN) session.upstream.send(msg);
@@ -491,12 +546,12 @@ function connectToGateway(sid) {
       }
     });
 
-    // 上游心跳（保持 Gateway 连接）
+    // 上游心跳（保持 Gateway 连接，与上游 25s 间隔对齐）
     session._heartbeat = setInterval(() => {
       if (upstream.readyState === WebSocket.OPEN) {
         upstream.ping();
       }
-    }, 30000);
+    }, 25000);
   });
 }
 
@@ -572,9 +627,21 @@ function startBgOperator() {
       if (msg.ok) {
         _bgOpReady = true;
         log.info('[node-setup] 后台 operator 就绪，检查 node 配对状态...');
+        // 持久化 Gateway 返回的 deviceToken
+        const authInfo = msg.payload?.auth;
+        if (authInfo?.deviceToken) {
+          saveDeviceToken(authInfo.deviceToken, authInfo.role, authInfo.scopes);
+          log.info('[node-setup] operator deviceToken 已保存');
+        }
         tryApproveNodeDevice();
       } else {
-        log.warn('[node-setup] 后台 operator connect 失败:', msg.error?.message);
+        const detailCode = msg.error?.details?.code || '';
+        log.warn(`[node-setup] 后台 operator connect 失败: ${msg.error?.message} (${detailCode})`);
+        // deviceToken 不匹配时清除缓存并重试
+        if (detailCode === 'AUTH_DEVICE_TOKEN_MISMATCH') {
+          log.info('[node-setup] 清除旧 deviceToken');
+          clearDeviceToken();
+        }
       }
       return;
     }
@@ -882,7 +949,8 @@ app.post('/api/setup', (req, res) => {
 /** POST /api/change-token — 修改连接密码（需当前 token 认证） */
 app.post('/api/change-token', (req, res) => {
   const { currentToken, newToken } = req.body || {};
-  if (!currentToken || !validateToken(currentToken)) {
+  // 当服务端未设置密码时，currentToken 可为空（不要求填当前密码）
+  if (CONFIG.proxyToken && !validateToken(currentToken)) {
     return res.status(401).json({ ok: false, error: '当前密码错误' });
   }
   if (!newToken || typeof newToken !== 'string' || newToken.length < 4) {
@@ -1247,6 +1315,16 @@ server.listen(CONFIG.port, () => {
   }
   log.info(`operator 设备 ID: ${deviceKey.deviceId.slice(0, 12)}...`);
   log.info(`node 设备 ID: ${nodeDeviceKey.deviceId.slice(0, 12)}... (system.notify 接收端)`);
+  // 安全检查：非回环地址使用 ws:// 时警告
+  if (CONFIG.gatewayUrl.startsWith('ws://')) {
+    try {
+      const gwUrl = new URL(CONFIG.gatewayUrl);
+      const isLoopback = ['127.0.0.1', '::1', 'localhost'].includes(gwUrl.hostname);
+      if (!isLoopback) {
+        log.warn(`⚠️  安全警告: Gateway 使用明文 ws:// 连接到非回环地址 (${gwUrl.hostname})，凭据和聊天数据可能被网络截获。建议使用 wss:// 或 SSH 隧道。`);
+      }
+    } catch {}
+  }
   // 先启动后台 operator（负责审批 node 设备配对），再延迟 2s 启动 node 客户端
   startBgOperator();
   setTimeout(startNodeClient, 2000);

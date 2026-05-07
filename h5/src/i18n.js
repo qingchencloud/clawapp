@@ -139,7 +139,7 @@ const messages = {
     'about.community': '社区交流',
     'about.feishu': '飞书交流群',
     'about.license': '开源协议',
-    'about.copyright': '© 2025 晴辰云',
+    'about.copyright': '© 2026 晴辰云',
     // 引导
     'guide.welcome': '欢迎使用 ClawApp 👋',
     'guide.tip1': '💬 在底部输入框发送消息与 AI 聊天',
@@ -304,7 +304,7 @@ const messages = {
     'about.community': 'Community',
     'about.feishu': 'Feishu Group',
     'about.license': 'License',
-    'about.copyright': '© 2025 QingchenCloud',
+    'about.copyright': '© 2026 QingchenCloud',
     'guide.welcome': 'Welcome to ClawApp 👋',
     'guide.tip1': '💬 Type in the input box below to chat with AI',
     'guide.tip2': '📋 Tap the title bar to switch/manage sessions',

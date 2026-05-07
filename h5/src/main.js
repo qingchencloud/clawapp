@@ -190,7 +190,7 @@ function initApp() {
     const host = hostInput.value.trim()
     const token = tokenInput.value.trim()
     if (!host) { errorEl.textContent = t('setup.error.host'); return }
-    if (!token) { errorEl.textContent = t('setup.error.token'); return }
+    // token 可以为空（服务端未配置 PROXY_TOKEN 时无需认证）
     errorEl.textContent = ''
     connectBtn.disabled = true
     connectBtn.textContent = t('setup.connecting')
@@ -230,11 +230,11 @@ function initApp() {
     showGuideIfNeeded()
   })
 
-  // 自动连接
-  if (config?.host && config?.token) {
+  // 自动连接（token 可以为空）
+  if (config?.host) {
     connectBtn.disabled = true
     connectBtn.textContent = t('setup.connecting')
-    doConnect(config.host, config.token, errorEl, connectBtn)
+    doConnect(config.host, config.token || '', errorEl, connectBtn)
   }
 
   // 语言切换时重建连接页
@@ -253,7 +253,6 @@ function initApp() {
       const host = hi.value.trim()
       const token = ti.value.trim()
       if (!host) { err.textContent = t('setup.error.host'); return }
-      if (!token) { err.textContent = t('setup.error.token'); return }
       err.textContent = ''
       btn.disabled = true
       btn.textContent = t('setup.connecting')

@@ -24,3 +24,4 @@ electron/node_modules/
 # node-device-key and notify history files
 server/.node-device-key.json
 server/.notify-history.json
+server/.device-token.json
