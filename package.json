@@ -1,6 +1,6 @@
 {
   "name": "clawapp",
-  "version": "1.9.0",
+  "version": "2.0.0",
   "private": true,
   "description": "ClawApp - OpenClaw AI 智能体的 H5 移动端聊天客户端",
   "homepage": "https://clawapp.qt.cool",
